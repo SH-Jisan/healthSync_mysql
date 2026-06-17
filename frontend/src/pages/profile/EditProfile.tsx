@@ -33,7 +33,7 @@ export default function EditProfile() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+            const { data } = await supabase.from('User').select('*').eq('id', user.id).single();
             if (data) {
                 setRole(data.role || 'CITIZEN');
                 setFullName(data.full_name || '');
@@ -74,7 +74,7 @@ export default function EditProfile() {
             updates.about = about;
         }
 
-        const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
+        const { error } = await supabase.from('User').update(updates).eq('id', user.id);
 
         if (error) {
             alert(t('profile.update_error'));

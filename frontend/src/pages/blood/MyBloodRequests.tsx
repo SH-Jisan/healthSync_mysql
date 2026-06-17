@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Trash, Megaphone, Clock, CheckCircle, Spinner } from 'phosphor-react';
+import { Trash, Megaphone, Clock, CheckCircle, Spinner, PencilSimple } from 'phosphor-react';
 import { formatDistanceToNow } from 'date-fns';
 import { bn } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/shared/lib/supabaseClient';
 import { bloodApi } from '@/services/api/blood';
+import type { BloodRequest } from '@/services/api/blood';
 import styles from './styles/MyBloodRequests.module.css';
 
 export default function MyBloodRequests() {
@@ -42,6 +44,54 @@ export default function MyBloodRequests() {
     const handleDelete = async (id: string) => {
         if (!confirm(t('blood.my_requests.confirm_delete', 'Are you sure?'))) return;
         deleteMutation.mutate(id);
+    };
+
+    // Edit states
+    const [editRequest, setEditRequest] = useState<BloodRequest | null>(null);
+    const [editBloodGroup, setEditBloodGroup] = useState('');
+    const [editHospitalName, setEditHospitalName] = useState('');
+    const [editUrgency, setEditUrgency] = useState<'NORMAL' | 'CRITICAL'>('NORMAL');
+    const [editStatus, setEditStatus] = useState('OPEN');
+    const [editReason, setEditReason] = useState('');
+
+    const handleOpenEdit = (req: BloodRequest) => {
+        setEditRequest(req);
+        setEditBloodGroup(req.blood_group);
+        setEditHospitalName(req.hospital_name);
+        setEditUrgency(req.urgency);
+        setEditStatus(req.status);
+        setEditReason(req.reason || '');
+    };
+
+    const updateMutation = useMutation({
+        mutationFn: ({ id, updates }: { id: string; updates: Partial<BloodRequest> }) =>
+            bloodApi.updateRequest(id, updates),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['myBloodRequests'] });
+            setEditRequest(null);
+            alert("Request updated successfully!");
+        },
+        onError: () => {
+            alert("Failed to update request.");
+        }
+    });
+
+    const handleSaveEdit = () => {
+        if (!editRequest) return;
+        if (!editBloodGroup || !editHospitalName) {
+            alert("Please fill in blood group and hospital name.");
+            return;
+        }
+        updateMutation.mutate({
+            id: editRequest.id,
+            updates: {
+                blood_group: editBloodGroup,
+                hospital_name: editHospitalName,
+                urgency: editUrgency,
+                status: editStatus,
+                reason: editReason
+            }
+        });
     };
 
     if (isLoading) return (
@@ -107,6 +157,14 @@ export default function MyBloodRequests() {
                                     </div>
                                     <div className={styles.actions}>
                                         <button
+                                            onClick={() => handleOpenEdit(req)}
+                                            className={styles.editBtn}
+                                            title="Edit Request"
+                                            disabled={deleteMutation.isPending}
+                                        >
+                                            <PencilSimple size={20} />
+                                        </button>
+                                        <button
                                             onClick={() => handleDelete(req.id)}
                                             className={styles.deleteBtn}
                                             title={t('blood.my_requests.delete_btn')}
@@ -121,6 +179,97 @@ export default function MyBloodRequests() {
                     )}
                 </AnimatePresence>
             </div>
+            {/* Edit Modal */}
+            {editRequest && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
+                        <h3 className={styles.modalTitle}>Edit Blood Request</h3>
+                        
+                        <div className={styles.formRow}>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Blood Group</label>
+                                <select 
+                                    value={editBloodGroup}
+                                    onChange={e => setEditBloodGroup(e.target.value)}
+                                    className={styles.select}
+                                >
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                            
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Urgency</label>
+                                <select 
+                                    value={editUrgency}
+                                    onChange={e => setEditUrgency(e.target.value as any)}
+                                    className={styles.select}
+                                >
+                                    <option value="NORMAL">Normal</option>
+                                    <option value="CRITICAL">Critical</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className={styles.formRow}>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Hospital Name</label>
+                                <input 
+                                    type="text" 
+                                    value={editHospitalName}
+                                    onChange={e => setEditHospitalName(e.target.value)}
+                                    className={styles.input}
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Status</label>
+                                <select 
+                                    value={editStatus}
+                                    onChange={e => setEditStatus(e.target.value)}
+                                    className={styles.select}
+                                >
+                                    <option value="OPEN">Open</option>
+                                    <option value="FULFILLED">Fulfilled</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Reason / Note</label>
+                            <textarea 
+                                value={editReason}
+                                onChange={e => setEditReason(e.target.value)}
+                                className={styles.textarea}
+                                rows={3}
+                            />
+                        </div>
+
+                        <div className={styles.modalActions}>
+                            <button 
+                                onClick={() => setEditRequest(null)}
+                                className={styles.cancelModalBtn}
+                                disabled={updateMutation.isPending}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleSaveEdit}
+                                className={styles.saveBtn}
+                                disabled={updateMutation.isPending}
+                            >
+                                {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -272,7 +272,7 @@
 .uploadBtn {
     padding: 0.6rem 1.2rem;
     border: 1px solid var(--border);
-    background: white;
+    background: var(--surface);
     color: var(--text-primary);
     border-radius: 0.8rem;
     font-weight: 600;

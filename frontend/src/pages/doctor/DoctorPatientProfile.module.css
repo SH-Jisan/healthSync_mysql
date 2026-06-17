@@ -31,15 +31,15 @@
 
 /* --- Header Card (Premium & Gradient) --- */
 .headerCard {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    background: var(--surface);
     padding: 2.5rem;
     border-radius: 24px;
     margin-bottom: 2rem;
-    border: 1px solid rgba(226, 232, 240, 0.8);
+    border: 1px solid var(--border);
     display: flex;
     align-items: center;
     gap: 2rem;
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-lg);
     position: relative;
     overflow: hidden;
 }
@@ -69,7 +69,7 @@
     font-size: 2.5rem;
     font-weight: 700;
     box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.25);
-    border: 4px solid white;
+    border: 4px solid var(--border-hover);
     position: relative;
     z-index: 1;
 }
@@ -109,27 +109,27 @@
 }
 
 .bloodBadge {
-    background: #ecfdf5;
-    color: #047857;
+    background: var(--success-light);
+    color: var(--success);
     padding: 6px 14px;
     border-radius: 99px;
     font-size: 0.85rem;
     font-weight: 600;
     display: flex;
     align-items: center;
-    border: 1px solid #d1fae5;
+    border: 1px solid rgba(52, 211, 153, 0.2);
 }
 
 .locationBadge {
-    background: #fdf4ff;
-    color: #9333ea;
+    background: var(--highlight-light);
+    color: var(--highlight);
     padding: 6px 14px;
     border-radius: 99px;
     font-size: 0.85rem;
     font-weight: 600;
     display: flex;
     align-items: center;
-    border: 1px solid #f0abfc55;
+    border: 1px solid rgba(129, 140, 248, 0.2);
 }
 
 /* --- Layout Grid --- */
@@ -175,12 +175,12 @@
 }
 
 .actionCard {
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--glass-surface);
     backdrop-filter: blur(10px);
     padding: 1.75rem;
     border-radius: 20px;
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
 }
 
 .actionCard h3 {
@@ -189,7 +189,7 @@
     color: var(--text-primary);
     font-size: 1.15rem;
     font-weight: 600;
-    border-bottom: 2px solid #f1f5f9;
+    border-bottom: 2px solid var(--border);
     padding-bottom: 12px;
     letter-spacing: -0.01em;
 }
@@ -256,7 +256,7 @@
 .infoBlock {
     margin-top: 2rem;
     padding-top: 1.5rem;
-    border-top: 1px solid #f1f5f9;
+    border-top: 1px solid var(--border);
 }
 
 .infoBlock h4 {
@@ -276,7 +276,7 @@
     color: var(--text-primary);
     font-size: 0.95rem;
     font-weight: 500;
-    background: #f8fafc;
+    background: var(--surface-elevated);
     padding: 10px 14px;
     border-radius: 10px;
 }

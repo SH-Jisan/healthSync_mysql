@@ -59,7 +59,7 @@
 
 /* Responsive Button */
 .refreshButton {
-    background: white;
+    background: var(--surface);
     color: var(--primary);
     border: none;
     padding: 0.8rem 2rem;

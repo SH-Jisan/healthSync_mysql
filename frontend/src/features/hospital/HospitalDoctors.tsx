@@ -25,7 +25,7 @@ export default function HospitalDoctors() {
         if (!user) return;
 
         const { data } = await supabase
-            .from('hospital_doctors')
+            .from('HospitalDoctor')
             .select('id, doctor_id, profiles:doctor_id(full_name, specialty)')
             .eq('hospital_id', user.id);
 
@@ -43,12 +43,12 @@ export default function HospitalDoctors() {
 
         try {
             // 1. Find Doctor by Email
-            const { data: doctorProfile } = await supabase.from('profiles').select('id').eq('email', searchEmail).single();
+            const { data: doctorProfile } = await supabase.from('User').select('id').eq('email', searchEmail).single();
             if (!doctorProfile) return alert(t('common.error'));
 
             // 2. Add to Hospital
             const { data: { user } } = await supabase.auth.getUser();
-            await supabase.from('hospital_doctors').insert({
+            await supabase.from('HospitalDoctor').insert({
                 hospital_id: user?.id,
                 doctor_id: doctorProfile.id
             });
@@ -65,7 +65,7 @@ export default function HospitalDoctors() {
 
     const removeDoctor = async (id: string) => {
         if (!confirm(t('dashboard.hospital.doctors.remove_confirm'))) return;
-        await supabase.from('hospital_doctors').delete().eq('id', id);
+        await supabase.from('HospitalDoctor').delete().eq('id', id);
         setDoctors(prev => prev.filter(d => d.id !== id));
     };
 

@@ -111,7 +111,7 @@
 .checkIcon {
     width: 40px;
     height: 40px;
-    background: white;
+    background: var(--surface);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -159,7 +159,7 @@
 .toggleKnob {
     width: 20px;
     height: 20px;
-    background: white;
+    background: var(--surface);
     border-radius: 50%;
     position: absolute;
     top: 2px;
@@ -195,4 +195,40 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+.btnRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.submitBtn {
+    margin-top: 0 !important;
+}
+
+.unregisterBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px;
+    border-radius: var(--radius-lg);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s var(--ease-smooth);
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--error, #EF4444);
+}
+
+.unregisterBtn:hover:not(:disabled) {
+    background: var(--error-light, #FEF2F2);
+    border-color: var(--error, #EF4444);
+}
+
+.unregisterBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }

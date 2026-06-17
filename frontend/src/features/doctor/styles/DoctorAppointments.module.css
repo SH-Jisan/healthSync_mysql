@@ -42,7 +42,7 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: #E0F2F1;
+    background: var(--accent-light);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -69,7 +69,7 @@
 .reason {
     margin: 5px 0 0;
     font-size: 0.9rem;
-    color: #64748B;
+    color: var(--text-secondary);
 }
 
 .viewProfileBtn {
@@ -91,8 +91,8 @@
 }
 
 .acceptBtn {
-    background: #DCFCE7;
-    color: #166534;
+    background: var(--success-light);
+    color: var(--success);
     border: none;
     padding: 8px 16px;
     border-radius: 8px;
@@ -104,8 +104,8 @@
 }
 
 .declineBtn {
-    background: #FEE2E2;
-    color: #991B1B;
+    background: var(--error-light);
+    color: var(--error);
     border: none;
     padding: 8px 16px;
     border-radius: 8px;
@@ -117,7 +117,7 @@
 }
 
 .statusConfirmed {
-    color: #16A34A;
+    color: var(--success);
     font-weight: bold;
     display: flex;
     align-items: center;
@@ -125,9 +125,129 @@
 }
 
 .statusCancelled {
-    color: #DC2626;
+    color: var(--error);
     font-weight: bold;
     display: flex;
     align-items: center;
     gap: 5px;
 }
+
+.rescheduleBtn {
+    background: var(--info-light);
+    color: var(--primary);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+}
+
+.rescheduleBtn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* Reschedule Modal Overlay */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1100;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 20px;
+}
+
+.modalContent {
+    background: var(--surface);
+    padding: 2rem;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border);
+}
+
+.modalTitle {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.input {
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    background: var(--surface-elevated);
+}
+
+.input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.modalActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.saveBtn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--primary);
+    color: white;
+    border: none;
+    transition: background 0.2s;
+}
+
+.saveBtn:hover:not(:disabled) {
+    background: #0369a1;
+}
+
+.saveBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.cancelModalBtn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #F1F5F9;
+    color: #475569;
+    border: 1px solid #E2E8F0;
+    transition: background 0.2s;
+}
+
+.cancelModalBtn:hover {
+    background: #E2E8F0;
+}

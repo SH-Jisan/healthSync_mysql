@@ -31,7 +31,7 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-            const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+            const { data } = await supabase.from('User').select('*').eq('id', user.id).single();
             if (data) {
                 setProfile({
                     full_name: data.full_name || 'User',

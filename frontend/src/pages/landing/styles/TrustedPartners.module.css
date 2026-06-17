@@ -1,6 +1,6 @@
 .section {
     padding: 60px 0;
-    background-color: white;
+    background-color: var(--surface);
     overflow: hidden;
     position: relative;
     border-bottom: 1px solid var(--border);

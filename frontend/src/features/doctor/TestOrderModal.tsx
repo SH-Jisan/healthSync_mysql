@@ -25,7 +25,7 @@ export default function TestOrderModal({ patientId, onClose, onSuccess }: Props)
 
     useEffect(() => {
         const fetchTests = async () => {
-            const { data } = await supabase.from('available_tests').select('*').order('name');
+            const { data } = await supabase.from('MedicalTest').select('*').order('name');
             if (data) setAvailableTests(data);
             setLoading(false);
         };

@@ -1,0 +1,466 @@
+/* ==========================================================================
+   DARK MODE COMPONENT-SPECIFIC OVERRIDES — PHASE 2
+   More targeted fixes found during the comprehensive visual audit.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   PROFILE PAGE — rgba(255,255,255) glass cards, hardcoded avatar gradient,
+   hardcoded roleBadge gradient, hardcoded logout button colors
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="profileCard"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+body.dark-theme [class*="avatarCircle"] {
+    background-image: linear-gradient(135deg, rgba(45, 212, 191, 0.2) 0%, rgba(14, 165, 233, 0.2) 100%) !important;
+    border-color: var(--border-hover) !important;
+}
+body.dark-theme [class*="roleBadge"] {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0.1) 100%) !important;
+    color: var(--primary) !important;
+    box-shadow: 0 4px 10px rgba(56, 189, 248, 0.1) !important;
+}
+body.dark-theme [class*="infoRow"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="infoRow"]:hover {
+    background: var(--surface-overlay) !important;
+    border-color: var(--border-hover) !important;
+}
+body.dark-theme [class*="aboutBox"] {
+    background: var(--surface-elevated) !important;
+    color: var(--text-secondary) !important;
+}
+body.dark-theme [class*="navButton"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="navButton"]:hover {
+    background: var(--surface-overlay) !important;
+}
+body.dark-theme [class*="logoutBtn"] {
+    background: var(--error-light) !important;
+    color: var(--error) !important;
+    border-color: rgba(248, 113, 113, 0.2) !important;
+}
+body.dark-theme [class*="logoutBtn"]:hover {
+    background: rgba(248, 113, 113, 0.2) !important;
+}
+body.dark-theme [class*="editBtn"]:hover {
+    background: var(--surface-elevated) !important;
+}
+
+/* --------------------------------------------------------------------------
+   DOCTOR LIST PAGE — glassmorphic tabs, avatar, specialty badges, googleIcon
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="tabs"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+body.dark-theme [class*="avatar"] {
+    background: linear-gradient(135deg, rgba(45, 212, 191, 0.2) 0%, rgba(14, 165, 233, 0.2) 100%) !important;
+}
+body.dark-theme [class*="specialty"] {
+    background: var(--surface-elevated) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="filterBadge"] {
+    background: rgba(45, 212, 191, 0.15) !important;
+    color: var(--accent) !important;
+}
+body.dark-theme [class*="googleIcon"] {
+    background: rgba(96, 165, 250, 0.15) !important;
+    color: #93c5fd !important;
+}
+body.dark-theme [class*="googleCard"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="card"] {
+    border-color: var(--border) !important;
+}
+
+/* --------------------------------------------------------------------------
+   APPOINTMENTS PAGE — skeleton/loading state, empty state
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="skeleton"],
+body.dark-theme [class*="loadingPlaceholder"] {
+    background: linear-gradient(90deg, var(--surface-elevated) 25%, var(--surface-overlay) 50%, var(--surface-elevated) 75%) !important;
+    background-size: 200% 100% !important;
+    animation: shimmerDark 1.5s infinite !important;
+}
+
+@keyframes shimmerDark {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+body.dark-theme [class*="emptyState"],
+body.dark-theme [class*="noResults"],
+body.dark-theme [class*="emptyCard"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+    color: var(--text-secondary) !important;
+}
+body.dark-theme [class*="tabSwitcher"],
+body.dark-theme [class*="tabContainer"],
+body.dark-theme [class*="tabGroup"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="tabItem"]:not([class*="active"]) {
+    color: var(--text-secondary) !important;
+}
+
+/* --------------------------------------------------------------------------
+   NOTIFICATIONS PAGE
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="notifCard"],
+body.dark-theme [class*="notificationItem"],
+body.dark-theme [class*="notifRow"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="notifCard"]:hover,
+body.dark-theme [class*="notificationItem"]:hover {
+    background: var(--surface-elevated) !important;
+}
+body.dark-theme [class*="unreadNotif"],
+body.dark-theme [class*="notifUnread"] {
+    background: rgba(56, 189, 248, 0.06) !important;
+    border-left-color: var(--primary) !important;
+}
+body.dark-theme [class*="notifFilters"],
+body.dark-theme [class*="filterTabs"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="markAllBtn"] {
+    color: var(--primary) !important;
+}
+
+/* --------------------------------------------------------------------------
+   BLOOD PAGES — form inputs, page-level --background override
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="formCard"],
+body.dark-theme [class*="formContainer"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="aiAssistant"],
+body.dark-theme [class*="aiBox"] {
+    border-color: rgba(56, 189, 248, 0.2) !important;
+}
+body.dark-theme [class*="dividerLine"] {
+    border-color: var(--border) !important;
+    color: var(--text-muted) !important;
+}
+body.dark-theme [class*="donorResultCard"],
+body.dark-theme [class*="searchResultCard"],
+body.dark-theme [class*="resultCard"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+/* Fix page-level --background override (RequestBlood.module.css has :root-like override) */
+body.dark-theme [class*="pageWrapper"],
+body.dark-theme [class*="bloodPageContainer"] {
+    background: var(--background) !important;
+}
+
+/* --------------------------------------------------------------------------
+   DOCTOR PATIENT PROFILE PAGE
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="patientProfile"],
+body.dark-theme [class*="profileWrapper"] {
+    background: var(--background) !important;
+}
+body.dark-theme [class*="patientCard"],
+body.dark-theme [class*="infoCard"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="medicationSection"],
+body.dark-theme [class*="diagnosisSection"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+}
+/* #fdf4ff (fuchsia-50) and #f8fafc (slate-50) panels */
+body.dark-theme [class*="fuchsiaBg"],
+body.dark-theme [class*="prescriptionBg"] {
+    background: rgba(129, 140, 248, 0.1) !important;
+    border-color: rgba(129, 140, 248, 0.2) !important;
+}
+
+/* --------------------------------------------------------------------------
+   SIGNUP PAGE — hardcoded inputs
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="inputField"],
+body.dark-theme [class*="formInput"],
+body.dark-theme [class*="fieldInput"] {
+    background: var(--surface-elevated) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border) !important;
+}
+
+/* --------------------------------------------------------------------------
+   EDIT PROFILE PAGE
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="editForm"],
+body.dark-theme [class*="formSection"],
+body.dark-theme [class*="formGroup"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="fieldGroup"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+}
+
+/* --------------------------------------------------------------------------
+   PATIENT PRESCRIPTIONS
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="prescriptionCard"],
+body.dark-theme [class*="medicineItem"],
+body.dark-theme [class*="medCard"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="prescriptionHeader"],
+body.dark-theme [class*="cardTop"] {
+    background: var(--surface-elevated) !important;
+    border-bottom-color: var(--border) !important;
+}
+body.dark-theme [class*="medicineBox"],
+body.dark-theme [class*="medDetails"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+}
+/* #f3f4f6 (gray-100) pending badge */
+body.dark-theme [class*="pendingBadge"],
+body.dark-theme [class*="grayBadge"] {
+    background: rgba(100, 116, 139, 0.2) !important;
+    color: var(--text-secondary) !important;
+}
+
+/* --------------------------------------------------------------------------
+   AI DOCTOR PAGE — hardcoded #F8FAFC background  
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="aiContainer"],
+body.dark-theme [class*="chatPanel"],
+body.dark-theme [class*="historyList"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="messageInput"],
+body.dark-theme [class*="chatInput"] {
+    background: var(--surface) !important;
+    border-top-color: var(--border) !important;
+}
+
+/* --------------------------------------------------------------------------
+   HEALTH PLAN PAGE
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="planSection"],
+body.dark-theme [class*="planContainer"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="goalCard"],
+body.dark-theme [class*="habitCard"],
+body.dark-theme [class*="taskItem"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+}
+
+/* --------------------------------------------------------------------------
+   SHARED TEST MODAL / UPLOAD MODAL
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="testItem"],
+body.dark-theme [class*="testCard"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="uploadBox"],
+body.dark-theme [class*="fileZone"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border-hover) !important;
+}
+
+/* --------------------------------------------------------------------------
+   HOSPITAL FEATURE PAGES
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="bedCard"],
+body.dark-theme [class*="bedGrid"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="bedAvailable"] {
+    background: rgba(52, 211, 153, 0.12) !important;
+    border-color: rgba(52, 211, 153, 0.2) !important;
+    color: var(--success) !important;
+}
+body.dark-theme [class*="bedOccupied"] {
+    background: rgba(248, 113, 113, 0.12) !important;
+    border-color: rgba(248, 113, 113, 0.2) !important;
+    color: var(--error) !important;
+}
+body.dark-theme [class*="hospitalStat"],
+body.dark-theme [class*="statBox"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="doctorItem"],
+body.dark-theme [class*="staffCard"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+
+/* --------------------------------------------------------------------------
+   DIAGNOSTIC CENTER PAGES
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="testRecord"],
+body.dark-theme [class*="reportCard"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="pendingReport"],
+body.dark-theme [class*="pendingItem"] {
+    background: var(--surface-elevated) !important;
+    border-left-color: var(--warning) !important;
+}
+
+/* --------------------------------------------------------------------------
+   TIMELINE / EVENT DETAILS MODAL
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="eventModal"],
+body.dark-theme [class*="eventContainer"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="eventSection"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="vitals"],
+body.dark-theme [class*="vitalItem"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="medicineTable"],
+body.dark-theme [class*="pillList"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+}
+/* Bright color date label */
+body.dark-theme [class*="dateLabel"],
+body.dark-theme [class*="eventDate"] {
+    color: var(--text-muted) !important;
+}
+
+/* --------------------------------------------------------------------------
+   GLOBAL — Fix any remaining rgba(255, 255, 255) glass panels
+   -------------------------------------------------------------------------- */
+body.dark-theme [style*="background: rgba(255, 255, 255"],
+body.dark-theme [style*="background:rgba(255, 255, 255"],
+body.dark-theme [style*="background-color: white"],
+body.dark-theme [style*="background-color: #fff"],
+body.dark-theme [style*="background-color: #ffffff"] {
+    background: var(--surface) !important;
+}
+
+/* --------------------------------------------------------------------------
+   APPOINTMENT BOOKING MODAL — inside DoctorList
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="bookingModal"],
+body.dark-theme [class*="appointmentModal"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="timeSlot"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+    color: var(--text-primary) !important;
+}
+body.dark-theme [class*="timeSlot"]:hover:not([class*="disabled"]) {
+    background: var(--primary-light) !important;
+    border-color: var(--primary) !important;
+    color: var(--primary) !important;
+}
+body.dark-theme [class*="timeSlot"][class*="selected"],
+body.dark-theme [class*="selectedSlot"] {
+    background: var(--primary) !important;
+    color: white !important;
+}
+body.dark-theme [class*="disabledSlot"],
+body.dark-theme [class*="timeSlot"][class*="disabled"] {
+    background: var(--surface-elevated) !important;
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+}
+body.dark-theme [class*="chamberCard"],
+body.dark-theme [class*="chamberInfo"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+}
+
+/* --------------------------------------------------------------------------
+   ABOUT PAGE
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="teamCard"],
+body.dark-theme [class*="featureCard"],
+body.dark-theme [class*="statsSection"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="techBadge"],
+body.dark-theme [class*="stackBadge"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+    color: var(--text-primary) !important;
+}
+
+/* --------------------------------------------------------------------------
+   LANDING PAGE (in dark theme context)
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="trustedSection"],
+body.dark-theme [class*="partnerSection"] {
+    background: var(--background) !important;
+}
+
+/* --------------------------------------------------------------------------
+   GENERAL — Status/Color badge patterns (all light-mode hardcoded)
+   -------------------------------------------------------------------------- */
+/* Light blue pills like #EFF6FF */
+body.dark-theme [class*="bluePill"],
+body.dark-theme [class*="infoBadge"] {
+    background: var(--info-light) !important;
+    color: var(--info) !important;
+}
+/* Light green pills like #D1FAE5, #F0FDFA */
+body.dark-theme [class*="greenPill"],
+body.dark-theme [class*="successBadge"] {
+    background: var(--success-light) !important;
+    color: var(--success) !important;
+}
+/* Light amber pills */
+body.dark-theme [class*="amberPill"],
+body.dark-theme [class*="warnBadge"] {
+    background: var(--warning-light) !important;
+    color: var(--warning) !important;
+}
+/* Teal avatars like #E0F2F1 / #B2DFDB — doctor/profile avatars */
+body.dark-theme [class*="tealAvatar"] {
+    background: linear-gradient(135deg, rgba(45, 212, 191, 0.2) 0%, rgba(14, 165, 233, 0.2) 100%) !important;
+}
+
+/* --------------------------------------------------------------------------
+   GLOBAL CATCH-ALL for rgba(255,255,255) backgrounds still present
+   -------------------------------------------------------------------------- */
+body.dark-theme * {
+    /* This catches inline color-scheme for date/time inputs */
+    color-scheme: dark;
+}

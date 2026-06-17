@@ -1,0 +1,299 @@
+=========================================
+HEALTHSYNC DATABASE SCHEMA
+=========================================
+
+1. User
+-----------------------------------------
+PK: user_id
+
+user_id INT AUTO_INCREMENT PRIMARY KEY
+full_name VARCHAR(255)
+email VARCHAR(255) UNIQUE
+phone VARCHAR(20)
+password_hash VARCHAR(255)
+date_of_birth DATE
+gender VARCHAR(20)
+address TEXT
+profile_photo VARCHAR(500)
+created_at DATETIME
+is_active BOOLEAN
+
+Relationships:
+- User → Patient (1:1)
+- User → Doctor (1:1)
+- User → UserRole (1:M)
+
+
+2. Role
+-----------------------------------------
+PK: role_id
+
+role_id INT AUTO_INCREMENT PRIMARY KEY
+role_name VARCHAR(100)
+
+Relationships:
+- Role → UserRole (1:M)
+
+
+3. UserRole
+-----------------------------------------
+PK: user_role_id
+
+user_role_id INT AUTO_INCREMENT PRIMARY KEY
+user_id INT
+role_id INT
+assigned_at DATETIME
+
+FK:
+user_id → User.user_id
+role_id → Role.role_id
+
+Relationships:
+- User ↔ Role (M:M)
+
+
+4. Patient
+-----------------------------------------
+PK: patient_id
+
+patient_id INT AUTO_INCREMENT PRIMARY KEY
+user_id INT UNIQUE
+blood_group VARCHAR(10)
+allergies TEXT
+chronic_conditions TEXT
+emergency_contact VARCHAR(100)
+
+FK:
+user_id → User.user_id
+
+Relationships:
+- Patient → Appointment (1:M)
+- Patient → Prescription (1:M)
+- Patient → TestOrder (1:M)
+- Patient → AccessPermission (1:M)
+- Patient → PatientMedicalHistory (1:M)
+
+
+5. Doctor
+-----------------------------------------
+PK: doctor_id
+
+doctor_id INT AUTO_INCREMENT PRIMARY KEY
+user_id INT UNIQUE
+registration_number VARCHAR(100)
+specialization VARCHAR(100)
+qualification VARCHAR(255)
+experience_years INT
+consultation_fee DECIMAL(10,2)
+is_verified BOOLEAN
+
+FK:
+user_id → User.user_id
+
+Relationships:
+- Doctor → Appointment (1:M)
+- Doctor → Prescription (1:M)
+- Doctor → TestOrder (1:M)
+- Doctor → HospitalDoctor (1:M)
+
+
+6. Hospital
+-----------------------------------------
+PK: hospital_id
+
+hospital_id INT AUTO_INCREMENT PRIMARY KEY
+name VARCHAR(255)
+license_number VARCHAR(100)
+address TEXT
+contact_number VARCHAR(20)
+email VARCHAR(255)
+is_active BOOLEAN
+
+Relationships:
+- Hospital → Appointment (1:M)
+- Hospital → HospitalDoctor (1:M)
+
+
+7. DiagnosticCenter
+-----------------------------------------
+PK: diagnostic_center_id
+
+diagnostic_center_id INT AUTO_INCREMENT PRIMARY KEY
+name VARCHAR(255)
+license_number VARCHAR(100)
+address TEXT
+contact_number VARCHAR(20)
+email VARCHAR(255)
+is_active BOOLEAN
+
+Relationships:
+- DiagnosticCenter → TestOrder (1:M)
+
+
+8. Appointment
+-----------------------------------------
+PK: appointment_id
+
+appointment_id INT AUTO_INCREMENT PRIMARY KEY
+patient_id INT
+doctor_id INT
+hospital_id INT
+appointment_date DATE
+appointment_time TIME
+status VARCHAR(50)
+created_at DATETIME
+
+FK:
+patient_id → Patient.patient_id
+doctor_id → Doctor.doctor_id
+hospital_id → Hospital.hospital_id
+
+Relationships:
+- Appointment → Prescription (1:1)
+- Appointment → TestOrder (1:M)
+
+
+9. Prescription
+-----------------------------------------
+PK: prescription_id
+
+prescription_id INT AUTO_INCREMENT PRIMARY KEY
+appointment_id INT
+doctor_id INT
+patient_id INT
+diagnosis TEXT
+advice TEXT
+created_at DATETIME
+
+FK:
+appointment_id → Appointment.appointment_id
+doctor_id → Doctor.doctor_id
+patient_id → Patient.patient_id
+
+Relationships:
+- Prescription → PrescriptionMedicine (1:M)
+
+
+10. PrescriptionMedicine
+-----------------------------------------
+PK: prescription_medicine_id
+
+prescription_medicine_id INT AUTO_INCREMENT PRIMARY KEY
+prescription_id INT
+medicine_name VARCHAR(255)
+dosage VARCHAR(100)
+duration VARCHAR(100)
+instructions TEXT
+
+FK:
+prescription_id → Prescription.prescription_id
+
+
+11. MedicalTest
+-----------------------------------------
+PK: test_id
+
+test_id INT AUTO_INCREMENT PRIMARY KEY
+test_name VARCHAR(255)
+description TEXT
+normal_range VARCHAR(100)
+unit VARCHAR(50)
+
+
+12. TestOrder
+-----------------------------------------
+PK: test_order_id
+
+test_order_id INT AUTO_INCREMENT PRIMARY KEY
+appointment_id INT
+patient_id INT
+doctor_id INT
+diagnostic_center_id INT
+order_date DATE
+status VARCHAR(50)
+
+FK:
+appointment_id → Appointment.appointment_id
+patient_id → Patient.patient_id
+doctor_id → Doctor.doctor_id
+diagnostic_center_id → DiagnosticCenter.diagnostic_center_id
+
+Relationships:
+- TestOrder → TestReport (1:1)
+
+
+13. TestReport
+-----------------------------------------
+PK: report_id
+
+report_id INT AUTO_INCREMENT PRIMARY KEY
+test_order_id INT
+report_file_url VARCHAR(500)
+result_summary TEXT
+uploaded_at DATETIME
+
+FK:
+test_order_id → TestOrder.test_order_id
+
+
+14. AccessPermission
+-----------------------------------------
+PK: permission_id
+
+permission_id INT AUTO_INCREMENT PRIMARY KEY
+patient_id INT
+granted_to_user_id INT
+permission_type VARCHAR(100)
+expires_at DATETIME
+
+FK:
+patient_id → Patient.patient_id
+granted_to_user_id → User.user_id
+
+Purpose:
+Patient grants access to another user.
+
+
+15. HospitalDoctor
+-----------------------------------------
+PK: hospital_doctor_id
+
+hospital_doctor_id INT AUTO_INCREMENT PRIMARY KEY
+hospital_id INT
+doctor_id INT
+join_date DATE
+status VARCHAR(50)
+
+FK:
+hospital_id → Hospital.hospital_id
+doctor_id → Doctor.doctor_id
+
+Purpose:
+Many-to-Many relationship between Hospital and Doctor.
+
+
+16. PatientMedicalHistory
+-----------------------------------------
+PK: history_id
+
+history_id INT AUTO_INCREMENT PRIMARY KEY
+patient_id INT
+entity_type VARCHAR(100)
+entity_id INT
+reference_id INT
+date DATE
+
+FK:
+patient_id → Patient.patient_id
+
+Example entity_type:
+- appointment
+- prescription
+- test
+- report
+- diagnosis
+- surgery
+
+Purpose:
+Stores complete lifelong medical timeline.
+=========================================

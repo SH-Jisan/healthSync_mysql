@@ -221,7 +221,8 @@
           "overview": "Overview",
           "doctors": "Doctors List",
           "patients": "Patients",
-          "blood": "Blood Bank"
+          "blood": "Blood Bank",
+          "beds": "Ward & Beds"
         },
         "overview": {
           "title": "Hospital Dashboard",

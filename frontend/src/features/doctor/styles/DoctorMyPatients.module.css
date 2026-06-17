@@ -8,6 +8,8 @@
 .title {
     color: var(--primary);
     margin: 0;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
 }
 
 .addBtn {
@@ -17,44 +19,66 @@
     background: var(--primary);
     color: white;
     border: none;
-    padding: 10px 16px;
-    border-radius: 8px;
+    padding: 10px 18px;
+    border-radius: var(--radius-md);
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 700;
+    transition: all 0.2s var(--ease-smooth);
+    box-shadow: var(--shadow-sm);
+}
+
+.addBtn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
 .noPatients {
     text-align: center;
     color: var(--text-secondary);
-    margin-top: 2rem;
+    margin-top: 3rem;
+    padding: 3rem;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border);
 }
 
 .listGrid {
     display: grid;
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
 }
 
 .card {
     background: var(--surface);
-    padding: 1rem;
-    border-radius: 12px;
+    padding: 1.25rem;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: all 0.25s var(--ease-smooth);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-light);
+    box-shadow: var(--shadow-md);
 }
 
 .patientInfo {
     display: flex;
     align-items: center;
     gap: 1rem;
+    min-width: 0;
 }
 
 .avatar {
-    width: 45px;
-    height: 45px;
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
     border-radius: 50%;
-    background: #E0F2F1;
+    background: var(--primary-light);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -62,78 +86,510 @@
 }
 
 .patientName {
-    margin: 0;
+    margin: 0 0 3px 0;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .contactInfo {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.825rem;
     color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .viewProfileBtn {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     background: none;
-    border: 1px solid var(--primary);
+    border: 1px solid var(--border);
     color: var(--primary);
-    padding: 6px 12px;
-    border-radius: 20px;
+    padding: 7px 14px;
+    border-radius: var(--radius-full);
     cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s var(--ease-smooth);
+    white-space: nowrap;
 }
 
-.modalOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+.viewProfileBtn:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+/* Loader Styles */
+.loaderContainer {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 100;
+    padding: 4rem;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Modal Overlay & Container */
+.modalOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
 .modalContent {
-    background: white;
-    padding: 2rem;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 400px;
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    width: 95%;
+    max-width: 650px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+    animation: modalAppear 0.3s var(--ease-spring);
+    box-sizing: border-box;
+}
+
+@keyframes modalAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.97) translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.modalHeader h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.closeBtn:hover {
+    background: var(--background);
+    color: var(--text-primary);
+}
+
+/* Tabs Toggle inside Modal */
+.tabsHeader {
+    display: flex;
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+    padding: 0 1rem;
+    gap: 8px;
+}
+
+.tabToggle {
+    background: none;
+    border: none;
+    padding: 12px 16px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.tabToggle:hover {
+    color: var(--primary);
+}
+
+.activeTabToggle {
+    color: var(--primary) !important;
+}
+
+.activeTabToggle::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary);
+}
+
+.modalBody {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem 1.75rem;
+    box-sizing: border-box;
+}
+
+/* Error Alert Banner */
+.errorBanner {
+    background: var(--error-light);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    color: var(--error);
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
 }
 
 .modalDesc {
     color: var(--text-secondary);
-    font-size: 0.9rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0 0 1.25rem 0;
+}
+
+/* Form Styles & Grid Rows */
+.formSection {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 1.5rem;
+}
+
+.avatarUploadContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.avatarPreviewBox {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--background);
+    border: 2px dashed var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.avatarPreviewImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatarPlaceholderIcon {
+    color: var(--text-muted);
+}
+
+.fileInputLabel {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    transition: background 0.2s;
+}
+
+.fileInputLabel:hover {
+    background: var(--primary-light);
+}
+
+.hiddenFileInput {
+    display: none !important;
+}
+
+.gridFields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.inputGroup label {
+    font-size: 0.775rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 .input {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    outline: none;
+    font-size: 0.9rem;
+    background: var(--surface);
+    color: var(--text-primary);
+    transition: all 0.2s;
+    font-family: inherit;
+    box-sizing: border-box;
 }
 
+.input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.1);
+}
+
+.select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    outline: none;
+    font-size: 0.9rem;
+    background: var(--surface);
+    color: var(--text-primary);
+    transition: all 0.2s;
+    font-family: inherit;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.1);
+}
+
+.textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    outline: none;
+    font-size: 0.9rem;
+    background: var(--surface);
+    color: var(--text-primary);
+    transition: all 0.2s;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.1);
+}
+
+.formRow2 {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 1rem;
+}
+
+.formRow3 {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 1rem;
+}
+
+.formRow4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+/* Collapsible Sections (Vitals & Intake) */
+.collapsibleSection {
+    background: var(--background);
+    padding: 1.25rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+}
+
+.sectionHeader h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+}
+
+.fileLabel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    cursor: pointer;
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.fileLabel:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(2, 132, 199, 0.02);
+}
+
+/* Modal Actions Buttons */
 .modalActions {
     display: flex;
-    gap: 10px;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 1.25rem;
+    margin-top: 0.5rem;
 }
 
 .cancelBtn {
-    flex: 1;
-    padding: 10px;
-    background: #eee;
-    border: none;
-    border-radius: 8px;
+    padding: 10px 20px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancelBtn:hover:not(:disabled) {
+    background: var(--background);
+    color: var(--text-primary);
+    border-color: var(--border-hover);
 }
 
 .saveBtn {
-    flex: 1;
-    padding: 10px;
+    padding: 10px 22px;
     background: var(--primary);
-    color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: white;
     cursor: pointer;
+    transition: all 0.2s var(--ease-smooth);
+    box-shadow: var(--shadow-sm);
+}
+
+.saveBtn:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.cancelBtn:disabled,
+.saveBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .formGrid {
+        grid-template-columns: 1fr;
+    }
+    
+    .avatarUploadContainer {
+        margin-bottom: 0.5rem;
+    }
+
+    .formRow2,
+    .formRow3,
+    .formRow4 {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+.cardActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.removeBtn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--error, #EF4444);
+    padding: 7px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s var(--ease-smooth);
+}
+
+.removeBtn:hover {
+    background: var(--error-light, #FEF2F2);
+    border-color: var(--error, #EF4444);
 }

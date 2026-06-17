@@ -36,7 +36,7 @@ export default function DoctorPatientProfile() {
     useEffect(() => {
         if (id) {
             const fetchPatient = async () => {
-                const { data } = await supabase.from('profiles').select('*').eq('id', id).single();
+                const { data } = await supabase.from('User').select('*').eq('id', id).single();
                 if (data) setPatient(data as PatientProfile);
                 setLoading(false);
             };

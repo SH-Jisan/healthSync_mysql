@@ -39,7 +39,7 @@
     padding: 10px 20px;
     border-radius: 50px;
     border: none;
-    background: white;
+    background: var(--surface);
     color: var(--primary);
     cursor: pointer;
     font-weight: 600;
@@ -55,14 +55,14 @@
 
 /* Profile Card */
 .profileCard {
-    background: rgba(255, 255, 255, 0.85);
+    background: var(--glass-surface);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     padding: 3rem 2rem;
     text-align: center;
     border-radius: 24px;
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
     margin-bottom: 2rem;
     position: relative;
     overflow: hidden;
@@ -86,16 +86,16 @@
     height: 120px;
     margin: 0 auto 1.5rem;
     border-radius: 50%;
-    background: white;
+    background: var(--surface);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 3rem;
     color: var(--primary);
     font-weight: bold;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-    border: 4px solid white;
-    background-image: linear-gradient(135deg, #E0F2F1 0%, #B2DFDB 100%);
+    box-shadow: var(--shadow-md);
+    border: 4px solid var(--border);
+    background-image: linear-gradient(135deg, var(--accent-light) 0%, rgba(14, 165, 233, 0.1) 100%);
     z-index: 1;
 }
 
@@ -118,15 +118,15 @@
 
 .roleBadge {
     position: relative;
-    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
-    color: #1E40AF;
+    background: var(--primary-light);
+    color: var(--primary);
     padding: 8px 20px;
     border-radius: 50px;
     font-size: 0.9rem;
     font-weight: 700;
     letter-spacing: 0.5px;
     display: inline-block;
-    box-shadow: 0 4px 10px rgba(30, 64, 175, 0.1);
+    box-shadow: 0 4px 10px rgba(56, 189, 248, 0.1);
     z-index: 1;
 }
 
@@ -178,18 +178,18 @@
     align-items: center;
     gap: 20px;
     padding: 18px 24px;
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--surface);
     backdrop-filter: blur(8px);
     border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--border);
     transition: all 0.2s ease;
 }
 
 .infoRow:hover {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--surface-elevated);
     transform: translateX(4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-    border-color: rgba(var(--primary-rgb), 0.2);
+    box-shadow: var(--shadow-sm);
+    border-color: var(--border-hover);
 }
 
 .infoLabel {
@@ -208,12 +208,12 @@
 }
 
 .aboutBox {
-    background: rgba(255, 255, 255, 0.6);
+    background: var(--surface);
     padding: 24px;
     border-radius: 16px;
     border: 1px dashed var(--border);
     font-size: 1rem;
-    color: #475569;
+    color: var(--text-secondary);
     font-style: italic;
     line-height: 1.6;
 }
@@ -224,8 +224,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 18px 24px;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 16px;
     cursor: pointer;
     font-size: 1.05rem;
@@ -236,8 +236,8 @@
 
 .navButton:hover {
     transform: translateY(-2px);
-    background: white;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+    background: var(--surface-elevated);
+    box-shadow: var(--shadow-md);
 }
 
 .navContent {
@@ -263,9 +263,9 @@
     margin-top: 3rem;
     width: 100%;
     padding: 18px;
-    background: linear-gradient(135deg, #FEF2F2 0%, #fee2e2 100%);
-    color: #B91C1C;
-    border: 1px solid #FECACA;
+    background: var(--error-light);
+    color: var(--error);
+    border: 1px solid rgba(248, 113, 113, 0.2);
     border-radius: 16px;
     font-weight: 700;
     cursor: pointer;
@@ -280,7 +280,7 @@
 .logoutBtn:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(220, 38, 38, 0.15);
-    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    background: rgba(239, 68, 68, 0.2);
 }
 
 @media (max-width: 600px) {

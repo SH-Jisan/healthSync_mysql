@@ -36,7 +36,7 @@ export default function DoctorList() {
 
     const fetchDoctors = async () => {
         setLoading(true);
-        let query = supabase.from('profiles').select('*').eq('role', 'DOCTOR');
+        let query = supabase.from('User').select('*').eq('role', 'DOCTOR');
 
         if (selectedSpec !== 'All') {
             query = query.ilike('specialty', `%${selectedSpec}%`);

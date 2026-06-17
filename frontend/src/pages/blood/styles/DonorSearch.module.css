@@ -26,7 +26,7 @@
 }
 
 .searchCard {
-    background: white;
+    background: var(--surface);
     padding: 2rem;
     margin-bottom: 3rem;
     border-radius: var(--radius-xl);
@@ -136,9 +136,9 @@
 .bloodCircle {
     width: 50px;
     height: 50px;
-    background: #FEF2F2;
-    color: #EF4444;
-    border: 2px solid #EF4444;
+    background: var(--error-light);
+    color: var(--error);
+    border: 2px solid var(--error);
     border-radius: 50%;
     display: flex;
     align-items: center;

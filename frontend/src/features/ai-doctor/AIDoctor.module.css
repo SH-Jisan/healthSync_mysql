@@ -77,7 +77,7 @@
 /* Result Card */
 .resultCard {
     margin-top: 2rem;
-    background: white;
+    background: var(--surface);
     border-radius: 16px;
     border: 1px solid var(--border);
     overflow: hidden;
@@ -105,7 +105,7 @@
 }
 
 .urgencyBadge {
-    background: white;
+    background: var(--surface);
     padding: 4px 12px;
     border-radius: 20px;
     font-weight: bold;

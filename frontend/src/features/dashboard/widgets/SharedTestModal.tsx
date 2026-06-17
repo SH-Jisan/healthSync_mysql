@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, Flask, CheckCircle, Spinner, Plus, FloppyDisk, ArrowLeft } from 'phosphor-react';
+import { X, Flask, CheckCircle, Spinner, Plus, FloppyDisk, ArrowLeft, PencilSimple, Trash } from 'phosphor-react';
 import { supabase } from '@/shared/lib/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import styles from './styles/SharedTestModal.module.css';
@@ -38,7 +38,7 @@ export default function SharedTestModal({ patientId, role, onClose, onSuccess, p
     const { data: availableTests = [], isLoading } = useQuery({
         queryKey: ['availableTests'],
         queryFn: async () => {
-            const { data, error } = await supabase.from('available_tests').select('*').order('name');
+            const { data, error } = await supabase.from('MedicalTest').select('*').order('name');
             if (error) throw error;
             return data as Test[];
         }
@@ -60,7 +60,7 @@ export default function SharedTestModal({ patientId, role, onClose, onSuccess, p
             if (!newTestName.trim()) throw new Error("Please enter test name");
             if (!newTestPrice || isNaN(Number(newTestPrice))) throw new Error("Please enter valid price");
 
-            const { data, error } = await supabase.from('available_tests').insert({
+            const { data, error } = await supabase.from('MedicalTest').insert({
                 name: newTestName.trim(),
                 base_price: Number(newTestPrice),
                 category: 'General'
@@ -81,6 +81,60 @@ export default function SharedTestModal({ patientId, role, onClose, onSuccess, p
         },
         onError: (err) => alert(err.message)
     });
+
+    // Edit Test UI States
+    const [editingTest, setEditingTest] = useState<Test | null>(null);
+    const [editTestName, setEditTestName] = useState('');
+    const [editTestPrice, setEditTestPrice] = useState('');
+
+    const handleOpenEdit = (e: React.MouseEvent, test: Test) => {
+        e.stopPropagation();
+        setEditingTest(test);
+        setEditTestName(test.name);
+        setEditTestPrice(test.base_price.toString());
+    };
+
+    const editTestMutation = useMutation({
+        mutationFn: async () => {
+            if (!editingTest) return;
+            if (!editTestName.trim()) throw new Error("Please enter test name");
+            if (!editTestPrice || isNaN(Number(editTestPrice))) throw new Error("Please enter valid price");
+
+            const { error } = await supabase
+                .from('MedicalTest')
+                .update({
+                    name: editTestName.trim(),
+                    base_price: Number(editTestPrice)
+                })
+                .eq('id', editingTest.id);
+
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['availableTests'] });
+            setEditingTest(null);
+            alert("Test updated successfully!");
+        },
+        onError: (err) => alert(err.message)
+    });
+
+    const handleDeleteTest = async (e: React.MouseEvent, testId: string, testName: string) => {
+        e.stopPropagation();
+        if (!confirm(`Are you sure you want to permanently delete the test "${testName}"? This action will remove it from the list of available tests.`)) return;
+        try {
+            const { error } = await supabase
+                .from('MedicalTest')
+                .delete()
+                .eq('id', testId);
+
+            if (error) throw error;
+            alert("Test deleted successfully!");
+            queryClient.invalidateQueries({ queryKey: ['availableTests'] });
+        } catch (err: any) {
+            console.error(err);
+            alert("Failed to delete test: " + err.message);
+        }
+    };
 
     // 4. Submit Assignment/Bill Mutation
     const submitMutation = useMutation({
@@ -112,7 +166,6 @@ export default function SharedTestModal({ patientId, role, onClose, onSuccess, p
                         provider_id: user.id,
                         test_names: [testName],
                         total_amount: individualPrice,
-                        paid_amount: 0,
                         status: 'DUE',
                         report_status: 'PENDING'
                     });
@@ -160,8 +213,48 @@ export default function SharedTestModal({ patientId, role, onClose, onSuccess, p
                     </h2>
                 </div>
 
-                {/* View Switcher: List vs Add New */}
-                {isAddingNew ? (
+                {/* View Switcher: List vs Add New vs Edit */}
+                {editingTest ? (
+                    // --- EDIT TEST VIEW ---
+                    <div className={styles.addView}>
+                        <div className={styles.addViewHeader}>
+                            <button onClick={() => setEditingTest(null)} className={styles.backBtn}>
+                                <ArrowLeft size={20} />
+                            </button>
+                            <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Edit Test</h3>
+                        </div>
+
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>Test Name</label>
+                            <input
+                                className={styles.input}
+                                value={editTestName}
+                                onChange={(e) => setEditTestName(e.target.value)}
+                                placeholder="e.g. CBC, Lipid Profile"
+                            />
+                        </div>
+
+                        <div className={styles.inputGroup}>
+                            <label className={styles.label}>Price (৳)</label>
+                            <input
+                                className={styles.input}
+                                type="number"
+                                value={editTestPrice}
+                                onChange={(e) => setEditTestPrice(e.target.value)}
+                                placeholder="e.g. 500"
+                            />
+                        </div>
+
+                        <button
+                            onClick={() => editTestMutation.mutate()}
+                            disabled={editTestMutation.isPending}
+                            className={styles.fullWidthBtn}
+                            style={{ backgroundColor: themeColor }}
+                        >
+                            {editTestMutation.isPending ? <Spinner className={styles.spin} size={20} /> : <><FloppyDisk size={20} /> Save Changes</>}
+                        </button>
+                    </div>
+                ) : isAddingNew ? (
                     // --- ADD NEW TEST VIEW ---
                     <div className={styles.addView}>
                         <div className={styles.addViewHeader}>
@@ -242,7 +335,25 @@ export default function SharedTestModal({ patientId, role, onClose, onSuccess, p
                                                 />
                                                 <span>{test.name}</span>
                                             </div>
-                                            <span className={styles.testPrice}>৳{test.base_price}</span>
+                                            <div className={styles.testRightSide}>
+                                                <span className={styles.testPrice}>৳{test.base_price}</span>
+                                                <div className={styles.testActions}>
+                                                    <button
+                                                        onClick={(e) => handleOpenEdit(e, test)}
+                                                        className={styles.rowEditBtn}
+                                                        title="Edit Test"
+                                                    >
+                                                        <PencilSimple size={14} />
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => handleDeleteTest(e, test.id, test.name)}
+                                                        className={styles.rowDeleteBtn}
+                                                        title="Delete Test"
+                                                    >
+                                                        <Trash size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     ))
                                 )}

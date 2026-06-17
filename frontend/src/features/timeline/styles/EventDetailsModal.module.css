@@ -104,14 +104,14 @@
     justify-content: center;
     width: 40px;
     height: 40px;
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--glass-surface);
     backdrop-filter: blur(4px);
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border);
     border-radius: 12px;
     cursor: pointer;
     color: var(--text-secondary);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
 }
 
 .iconBtn:hover {
@@ -186,7 +186,7 @@
 }
 
 .vitalCard {
-    background: white;
+    background: var(--surface);
     padding: 1.5rem;
     border-radius: 16px;
     border: 1px solid rgba(0, 0, 0, 0.04);
@@ -233,7 +233,7 @@
 }
 
 .summarySection {
-    background: white;
+    background: var(--surface);
     padding: 2rem;
     border-radius: 16px;
     border: 1px solid rgba(0, 0, 0, 0.04);
@@ -275,7 +275,7 @@
 }
 
 .medicineTableWrapper {
-    background: white;
+    background: var(--surface);
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid rgba(0, 0, 0, 0.04);
@@ -368,7 +368,7 @@
 
 /* Prescription View Styles */
 .prescriptionView {
-    background: white;
+    background: var(--surface);
     padding: 3rem;
     border-radius: 16px;
     min-height: 100%;
@@ -528,7 +528,7 @@
         left: 0;
         top: 0;
         width: 100%;
-        background: white;
+        background: var(--surface);
     }
 }
 
@@ -779,7 +779,7 @@
 
 /* 3. Detailed Markdown Analysis (Gray/White Theme) */
 .detailedSection {
-    background: white;
+    background: var(--surface);
     border: 1px solid #e2e8f0;
     border-radius: 16px;
     padding: 2rem;
@@ -865,3 +865,151 @@
     color: #b91c1c;
     border: 1px solid #fecaca;
 }
+
+/* Edit Form Styles */
+.editForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: 800px;
+    margin: 0 auto;
+    padding-bottom: 2rem;
+}
+
+.editFormTitle {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+
+@media (max-width: 600px) {
+    .formGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.formField {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.formLabel {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.formInput {
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    font-size: 0.95rem;
+    background: var(--surface-elevated);
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.formInput:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(var(--primary-hsl), 0.15);
+}
+
+.formTextarea {
+    composes: formInput;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.vitalsTitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1E293B;
+    margin: 1rem 0 0.5rem 0;
+    border-bottom: 1px solid #E2E8F0;
+    padding-bottom: 0.5rem;
+}
+
+.formActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #E2E8F0;
+}
+
+.formSaveBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--primary);
+    color: white;
+    border: 1px solid var(--primary);
+    transition: all 0.2s;
+}
+
+.formSaveBtn:hover:not(:disabled) {
+    background: #312e81; /* Darken primary */
+    transform: translateY(-1px);
+}
+
+.formSaveBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.formCancelBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #F1F5F9;
+    color: #475569;
+    border: 1px solid #E2E8F0;
+    transition: all 0.2s;
+}
+
+.formCancelBtn:hover {
+    background: #E2E8F0;
+    color: #1F2937;
+}
+
+.editBtn {
+    background: #EFF6FF;
+    color: var(--primary);
+    border: 1px solid #DBEAFE;
+}
+
+.editBtn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.deleteBtn {
+    background: #FEE2E2;
+    color: #DC2626;
+    border: 1px solid #FECACA;
+}
+
+.deleteBtn:hover {
+    background: #DC2626;
+    color: white;
+    border-color: #DC2626;
+}

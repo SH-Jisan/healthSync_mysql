@@ -1,30 +1,30 @@
-/* layout/Sidebar.module.css - Premium Dashboard Sidebar */
+/* layout/Sidebar.module.css - Collapsible Premium Sidebar */
 
 .sidebar {
     width: var(--sidebar-width);
-    height: 100vh;
-    background: rgba(255, 255, 255, 0.95);
-    /* High opacity glass */
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    height: calc(100vh - var(--navbar-height));
+    background: var(--surface);
+    border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     position: fixed;
     left: 0;
-    top: 0;
+    top: var(--navbar-height);
     z-index: 50;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+    transition: width 0.5s var(--ease-out), transform 0.5s var(--ease-out);
+    box-shadow: var(--shadow-sm);
+    will-change: width, transform;
 }
 
 /* Mobile: Hide Sidebar by default */
 @media (max-width: 768px) {
     .sidebar {
+        top: 0;
+        height: 100vh;
         transform: translateX(-100%);
         width: 280px;
         max-width: 85vw;
-        /* Slightly wider on mobile for comfort */
+        transition: transform 0.5s var(--ease-out);
     }
 
     .sidebar.open {
@@ -34,128 +34,135 @@
 }
 
 .header {
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    align-items: center;
 }
 
 .welcomeLabel {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
+    font-size: 0.7rem;
+    color: var(--text-muted);
     font-weight: 700;
-    text-align: center;
-    width: 100%;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    opacity: 0.6;
-    margin-bottom: 4px;
+    letter-spacing: 0.75px;
+    margin-bottom: 2px;
+    display: block;
+    max-height: 20px;
+    opacity: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    visibility: visible;
+    transform: translateX(0);
+    /* Progressive entry transition with 0.05s delay */
+    transition: opacity 0.2s var(--ease-out) 0.05s, 
+                max-height 0.5s var(--ease-out), 
+                margin-bottom 0.5s var(--ease-out),
+                visibility 0.2s var(--ease-out) 0.05s,
+                transform 0.5s var(--ease-out) 0.05s;
+    will-change: opacity, transform, max-height;
 }
 
 .userCard {
     background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-    border-radius: 16px;
-    padding: 12px;
+    border-radius: var(--radius-md);
+    padding: 10px;
     display: flex;
     align-items: center;
     gap: 12px;
-    box-shadow: 0 4px 20px rgba(0, 121, 107, 0.15);
-    border: none;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: padding 0.5s var(--ease-out), 
+                gap 0.5s var(--ease-out), 
+                transform 0.25s var(--ease-out), 
+                box-shadow 0.25s var(--ease-out);
+    will-change: padding, gap, transform;
 }
 
 .userCard:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 121, 107, 0.25);
-}
-
-.userCard h3 {
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.userCard p {
-    color: rgba(255, 255, 255, 0.9);
+    transform: translateY(-1.5px);
+    box-shadow: var(--shadow-md);
 }
 
 .avatar {
-    width: 42px;
-    height: 42px;
+    width: 38px;
+    height: 38px;
     background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(5px);
     color: white;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    font-size: 1.1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-weight: 800;
+    font-size: 1.05rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+    transition: transform 0.25s var(--ease-out);
 }
 
-
+.userInfo {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-width: 180px;
+    opacity: 1;
+    white-space: nowrap;
+    visibility: visible;
+    transform: translateX(0);
+    /* Progressive entry transition with 0.1s delay */
+    transition: opacity 0.2s var(--ease-out) 0.1s, 
+                max-width 0.5s var(--ease-out),
+                visibility 0.2s var(--ease-out) 0.1s,
+                transform 0.5s var(--ease-out) 0.1s;
+    will-change: opacity, transform, max-width;
+}
 
 .userInfo h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    letter-spacing: 0.3px;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .userInfo p {
     margin: 0;
-    font-size: 0.85rem;
-    opacity: 0.8;
-    font-weight: 400;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-
 .nav {
-    padding: 1.5rem 1rem;
+    padding: 1rem 0.75rem;
     flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    min-height: 0;
-    /* Crucial for scrolling in flex container */
+    gap: 0.35rem;
     scrollbar-width: thin;
-    /* Firefox */
-    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-}
-
-/* Custom scrollbar for Webkit */
-.nav::-webkit-scrollbar {
-    width: 4px;
-}
-
-.nav::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.nav::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
 }
 
 .navItem {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-radius: 12px;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
     color: var(--text-secondary);
-    font-weight: 500;
-    transition: color 0.2s ease;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    transition: color 0.2s var(--ease-smooth), background-color 0.2s var(--ease-smooth), padding 0.5s var(--ease-out);
     text-decoration: none;
     cursor: pointer;
-    border: 1px solid transparent;
-    overflow: hidden;
     z-index: 1;
     flex-shrink: 0;
-    /* Prevent shrinking */
+    will-change: padding;
 }
 
 .navContent {
@@ -165,84 +172,233 @@
     align-items: center;
     gap: 12px;
     width: 100%;
-    min-width: 0;
-    /* Enable truncation in flex child */
+    transition: transform 0.25s var(--ease-out);
+    will-change: transform;
 }
 
-.navItem span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.navIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.25s var(--ease-out);
+    will-change: transform;
 }
 
 .navItem:hover {
     color: var(--primary);
+    background: rgba(2, 132, 199, 0.04);
+}
+
+.navItem:hover .navIcon {
+    transform: scale(1.1);
+}
+
+.sidebar:not(.collapsed) .navItem:hover .navContent {
+    transform: translateX(4px);
 }
 
 .activeItem {
     color: var(--primary) !important;
-    font-weight: 600;
-    background: transparent !important;
-    /* Let motion div handle bg */
-    border: none;
-    box-shadow: none;
 }
 
-.activeItem svg {
-    color: var(--primary) !important;
+.navLabel {
+    display: inline-block;
+    max-width: 180px;
+    opacity: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    visibility: visible;
+    transform: translateX(0);
+    /* Progressive entry transition with 0.15s delay */
+    transition: opacity 0.2s var(--ease-out) 0.15s, 
+                max-width 0.5s var(--ease-out),
+                visibility 0.2s var(--ease-out) 0.15s,
+                transform 0.5s var(--ease-out) 0.15s;
+    will-change: opacity, transform, max-width;
 }
 
-/* The Framer Motion Pill */
+/* Framer Motion Active Pilled Bg */
 .activePill {
     position: absolute;
     inset: 0;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(255, 255, 255, 1);
+    background: rgba(2, 132, 199, 0.08);
+    border-radius: var(--radius-md);
     z-index: 0;
-    /* Behind text */
 }
 
 .activePill::before {
     content: "";
     position: absolute;
     left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-    border-radius: 4px 0 0 4px;
+    top: 4px;
+    bottom: 4px;
+    width: 3.5px;
+    background: var(--primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    transition: left 0.5s var(--ease-out);
+    will-change: left;
 }
 
-.divider {
-    height: 1px;
-    background-color: rgba(0, 0, 0, 0.06);
-    margin: 1rem 0.5rem;
+.footer {
+    padding: 1rem 0.75rem;
+    border-top: 1px solid var(--border);
 }
 
-.settingsGroup {
-    margin-top: auto;
-    padding: 1rem 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.settingsGroup>* {
-    flex: 1;
+.footer .navLabel {
+    /* Progressive entry transition with 0.2s delay */
+    transition: opacity 0.2s var(--ease-out) 0.2s, 
+                max-width 0.5s var(--ease-out),
+                visibility 0.2s var(--ease-out) 0.2s,
+                transform 0.5s var(--ease-out) 0.2s;
 }
 
 .logout {
-    margin-top: auto;
     color: var(--error);
 }
 
 .logout:hover {
-    background-color: rgba(239, 68, 68, 0.05);
     color: var(--error);
-    border-color: rgba(239, 68, 68, 0.1);
+    background: var(--error-light) !important;
+}
+
+/* Desktop-Only Collapsed Sidebar Styles */
+@media (min-width: 769px) {
+    .collapsed {
+        width: var(--sidebar-collapsed-width) !important;
+    }
+
+    .collapsed .header {
+        padding: 1.25rem 0.5rem;
+    }
+
+    .collapsed .welcomeLabel {
+        opacity: 0;
+        max-height: 0;
+        margin-bottom: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateX(-12px);
+        /* Instant exit transition to avoid vertical popping */
+        transition: opacity 0.1s ease-out, 
+                    max-height 0.5s var(--ease-out), 
+                    margin-bottom 0.5s var(--ease-out),
+                    visibility 0.1s ease-out,
+                    transform 0.1s ease-out;
+    }
+
+    .collapsed .userCard {
+        background: none;
+        box-shadow: none;
+        padding: 0;
+        justify-content: center;
+        gap: 0px;
+    }
+
+    .collapsed .avatar {
+        background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .collapsed .userInfo {
+        opacity: 0;
+        max-width: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateX(-12px);
+        /* Instant exit transition */
+        transition: opacity 0.1s ease-out, 
+                    max-width 0.5s var(--ease-out),
+                    visibility 0.1s ease-out,
+                    transform 0.1s ease-out;
+    }
+
+    .collapsed .nav {
+        padding: 1rem 0.5rem;
+        overflow: visible !important; /* Prevents tooltip clipping */
+    }
+
+    .collapsed .navItem {
+        justify-content: center;
+        padding: 10px 0;
+    }
+
+    .collapsed .navContent {
+        justify-content: center;
+        gap: 0;
+    }
+
+    .collapsed .navLabel {
+        opacity: 0;
+        max-width: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateX(-12px);
+        /* Instant exit transition to prevent layout wrapping */
+        transition: opacity 0.1s ease-out, 
+                    max-width 0.5s var(--ease-out),
+                    visibility 0.1s ease-out,
+                    transform 0.1s ease-out;
+    }
+
+    .collapsed .activePill::before {
+        left: 2px;
+    }
+
+    .collapsed .footer {
+        padding: 1rem 0.5rem;
+    }
+
+    /* Premium Custom Tooltips for Collapsed Items - Placed on navIcon to support hidden overflow on main container */
+    .collapsed .navIcon[data-tooltip] {
+        position: relative;
+    }
+
+    .collapsed .navIcon[data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: calc(100% + 18px);
+        top: 50%;
+        transform: translateY(-50%) translateX(-8px);
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #ffffff;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15), 0 2px 4px rgba(15, 23, 42, 0.1);
+        transition: opacity 0.15s var(--ease-out), transform 0.15s var(--ease-out);
+        z-index: 100;
+    }
+
+    .collapsed .navIcon[data-tooltip]::before {
+        content: "";
+        position: absolute;
+        left: calc(100% + 12px);
+        top: 50%;
+        transform: translateY(-50%) translateX(-4px);
+        border-width: 4px;
+        border-style: solid;
+        border-color: transparent rgba(15, 23, 42, 0.95) transparent transparent;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.15s var(--ease-out), transform 0.15s var(--ease-out);
+        z-index: 100;
+    }
+
+    .collapsed .navIcon[data-tooltip]:hover::after,
+    .collapsed .navIcon[data-tooltip]:hover::before {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(-50%) translateX(0);
+        transition-delay: 0.1s; /* Subtle delay to prevent flickering */
+    }
 }

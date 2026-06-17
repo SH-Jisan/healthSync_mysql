@@ -40,3 +40,23 @@
 .info small {
     color: var(--text-secondary);
 }
+
+.removeBtn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--error, #EF4444);
+    padding: 6px;
+    border-radius: var(--radius-full, 9999px);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    transition: all 0.2s var(--ease-smooth, ease);
+    z-index: 10;
+}
+
+.removeBtn:hover {
+    background: var(--error-light, #FEF2F2);
+    border-color: var(--error, #EF4444);
+}

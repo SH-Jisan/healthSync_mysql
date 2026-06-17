@@ -12,7 +12,7 @@
 }
 
 .modal {
-    background: white;
+    background: var(--surface);
     padding: 24px;
     border-radius: 12px;
     width: 90%;
@@ -171,7 +171,7 @@
 }
 
 .testItem.selected {
-    background: #fff;
+    background: var(--surface);
     border-color: #4338ca;
     /* simple feedback */
 }
@@ -231,4 +231,45 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+.testRightSide {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.testActions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.testItem:hover .testActions {
+    opacity: 1;
+}
+
+.rowEditBtn, .rowDeleteBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted, #94a3b8);
+    transition: all 0.15s;
+}
+
+.rowEditBtn:hover {
+    color: var(--primary, #0284c7) !important;
+    background: var(--primary-light, #e0f2fe) !important;
+}
+
+.rowDeleteBtn:hover {
+    color: var(--error, #ef4444) !important;
+    background: var(--error-light, #fee2e2) !important;
 }

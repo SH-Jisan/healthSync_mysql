@@ -3,77 +3,69 @@
     /*                                 COLOR PALETTE                              */
     /* -------------------------------------------------------------------------- */
 
-    /* --- Primary Brand (Teal/Green) --- */
-    --primary: #00796B;
-    --primary-hsl: 173, 100%, 24%;
+    /* --- Primary Brand (Clinical Sky Blue) --- */
+    --primary: #0284c7;
+    --primary-hsl: 200, 95%, 39%;
+    --primary-light: #e0f2fe;
+    --primary-dark: #0369a1;
 
-    --primary-light: #B2DFDB;
-    --primary-light-hsl: 171, 41%, 78%;
+    /* --- Accent (Soothing Health Teal) --- */
+    --accent: #0d9488;
+    --accent-hsl: 173, 80%, 36%;
+    --accent-light: #ccfbf1;
+    --accent-dark: #0f766e;
 
-    --primary-dark: #004D40;
-    --primary-dark-hsl: 171, 100%, 13%;
+    /* --- Secondary/Highlight (Modern Indigo) --- */
+    --highlight: #4f46e5;
+    --highlight-hsl: 243, 75%, 59%;
+    --highlight-light: #e0e7ff;
+    --highlight-dark: #3730a3;
 
-    /* --- Accent (Bright Teal) --- */
-    --accent: #00BFA5;
-    --accent-hsl: 172, 100%, 37%;
+    /* --- Neutral Palette --- */
+    --background: #f8fafc; /* slate-50 */
+    --surface: #ffffff;
+    --surface-elevated: #f1f5f9; /* Card raised surface */
+    --surface-overlay: #f8fafc; /* Modal/overlay backgrounds */
+    --surface-subtle: rgba(248, 250, 252, 0.6); /* Low opacity surface tint */
+    --surface-dark: #0f172a; /* slate-900 */
+    --border: #e2e8f0; /* slate-200 */
+    --border-hover: #cbd5e1; /* slate-300 */
+    --border-strong: #94a3b8; /* slate-400 - high contrast border */
 
-    /* --- Secondary/Highlight (Lime Green) --- */
-    --highlight: #AEEA00;
-    --highlight-hsl: 74, 100%, 46%;
+    /* --- Text Colors --- */
+    --text-primary: #0f172a; /* slate-900 */
+    --text-secondary: #475569; /* slate-600 */
+    --text-muted: #94a3b8; /* slate-400 */
+    --text-inverse: #ffffff;
 
     /* --- Gradient Colors --- */
-    --gradient-start: #0056D2;
-    /* Deep Blue */
-    --gradient-end: #009688;
-    /* Teal */
+    --gradient-start: #0284c7; /* Sky */
+    --gradient-end: #0d9488; /* Teal */
     --gradient-primary: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-    --gradient-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
-    /* Glass Gradient */
+    --gradient-accent: linear-gradient(135deg, #4f46e5 0%, #0284c7 100%);
+    --gradient-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
 
     /* --- Glassmorphism --- */
     --glass-surface: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.5);
-    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-
-    /* -------------------------------------------------------------------------- */
-    /*                                NEUTRAL COLORS                              */
-    /* -------------------------------------------------------------------------- */
-
-    --background: #F3F4F6;
-    --background-hsl: 220, 14%, 96%;
-
-    --surface: #FFFFFF;
-    --surface-hsl: 0, 0%, 100%;
-
-    --surface-dark: #111827;
-    /* Footer/Dark Mode Bg */
-    --surface-dark-hsl: 220, 39%, 11%;
-
-    --text-primary: #1F2937;
-    --text-primary-hsl: 215, 28%, 17%;
-
-    --text-secondary: #6B7280;
-    --text-secondary-hsl: 220, 9%, 46%;
-
-    --text-inverse: #FFFFFF;
-
-    --border: #E5E7EB;
-    --border-hsl: 220, 13%, 91%;
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-shadow: 0 8px 32px 0 rgba(15, 23, 42, 0.08);
 
     /* -------------------------------------------------------------------------- */
     /*                                SEMANTIC COLORS                             */
     /* -------------------------------------------------------------------------- */
-
-    --success: #10B981;
-    --warning: #F59E0B;
-    --error: #EF4444;
-    --info: #3B82F6;
+    --success: #10b981;
+    --success-light: #d1fae5;
+    --warning: #f59e0b;
+    --warning-light: #fef3c7;
+    --error: #ef4444;
+    --error-light: #fee2e2;
+    --info: #3b82f6;
+    --info-light: #dbeafe;
 
     /* -------------------------------------------------------------------------- */
     /*                                TYPOGRAPHY                                  */
     /* -------------------------------------------------------------------------- */
-
-    --font-family: 'Poppins', sans-serif;
+    --font-family: 'Plus Jakarta Sans', 'Outfit', system-ui, -apple-system, sans-serif;
 
     --text-xs: 0.75rem;
     --text-sm: 0.875rem;
@@ -83,32 +75,30 @@
     --text-2xl: 1.5rem;
     --text-3xl: 1.875rem;
     --text-4xl: 2.25rem;
-    --text-hero: 3.5rem;
+    --text-hero: 3rem;
 
     /* -------------------------------------------------------------------------- */
     /*                                SPACING & SIZING                            */
     /* -------------------------------------------------------------------------- */
-
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
     --radius-xl: 24px;
     --radius-full: 9999px;
 
-    --sidebar-width: 260px;
+    --sidebar-width: 240px;
+    --sidebar-collapsed-width: 70px;
     --navbar-height: 70px;
 
     /* -------------------------------------------------------------------------- */
     /*                                  EFFECTS                                   */
     /* -------------------------------------------------------------------------- */
+    --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+    --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+    --shadow-glow: 0 0 20px rgba(2, 132, 199, 0.15);
 
-    /* Shadow Scaling */
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-
-    /* Animation Curves */
     --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
     --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);

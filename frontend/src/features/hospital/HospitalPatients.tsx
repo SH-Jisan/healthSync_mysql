@@ -45,7 +45,7 @@ export default function HospitalPatients() {
 
         try {
             // 1. Find Patient
-            const { data: patientProfile } = await supabase.from('profiles').select('id').eq('email', searchEmail).single();
+            const { data: patientProfile } = await supabase.from('User').select('id').eq('email', searchEmail).single();
             if (!patientProfile) return alert(t('common.error'));
 
             // 2. Admit

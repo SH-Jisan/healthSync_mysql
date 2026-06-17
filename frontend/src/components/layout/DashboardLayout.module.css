@@ -1,68 +1,68 @@
-/* layout/DashboardLayout.module.css */
-
 .layoutContainer {
     display: flex;
+    flex-direction: column;
     min-height: 100vh;
+    background-color: var(--background);
+}
+
+.bodyContainer {
+    display: flex;
+    flex: 1;
+    position: relative;
 }
 
 .mainContent {
     flex: 1;
-    width: 100%;
-}
-
-.mobileHeader {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    transition: margin-left 0.5s var(--ease-out), width 0.5s var(--ease-out);
+    will-change: margin-left, width;
+    min-height: calc(100vh - var(--navbar-height));
     display: flex;
-    align-items: center;
-    padding: 1rem;
-    background-color: var(--surface);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 30;
+    flex-direction: column;
 }
 
-.menuButton {
-    background: none;
-    border: none;
-    padding: 0.5rem;
-    margin-right: 1rem;
-    display: flex;
-    cursor: pointer;
-}
-
-.pageTitle {
-    font-size: 1.25rem;
-    color: var(--primary);
-    margin: 0;
+.collapsedContent {
+    margin-left: var(--sidebar-collapsed-width);
+    width: calc(100% - var(--sidebar-collapsed-width));
 }
 
 .contentContainer {
-    padding: 1.5rem;
-    max-width: 1200px;
+    padding: 2rem;
+    max-width: 1300px;
+    width: 100%;
     margin: 0 auto;
+    flex: 1;
 }
 
-/* Responsive Design */
-@media (min-width: 769px) {
-    .mainContent {
-        margin-left: var(--sidebar-width);
-        width: calc(100% - var(--sidebar-width));
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+    .mainContent, 
+    .collapsedContent {
+        margin-left: 0 !important;
+        width: 100% !important;
     }
 
-    .mobileHeader {
-        display: none !important;
+    .contentContainer {
+        padding: 1.25rem;
     }
 }
 
-/* Mobile Overlay - Moved from Sidebar */
+/* Mobile Drawer Overlay */
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     z-index: 40;
-    display: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    will-change: opacity, visibility;
 }
 
 .overlay.show {
-    display: block;
+    opacity: 1;
+    visibility: visible;
 }

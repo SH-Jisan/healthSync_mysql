@@ -1,17 +1,96 @@
 @import '../../theme/design_tokens.css';
 @import '../../theme/ui_templates.css';
+@import '../../theme/dark_overrides.css';
+@import '../../theme/dark_overrides_phase2.css';
+@import '../../theme/dark_overrides_phase3.css';
 
-
-
-/* Dark Mode Overrides */
+/* ============================================================ */
+/* DARK THEME — Modern Layered Dark (GitHub Dark / Linear)      */
+/* ============================================================ */
 body.dark-theme {
-    --background: #111827;
-    --surface: #1F2937;
-    --text-primary: #F9FAFB;
-    --text-secondary: #9CA3AF;
-    --border: #374151;
-    --primary-light: rgba(0, 121, 107, 0.2);
+    /* --- Core Surfaces (Layered, no pure black) --- */
+    --background: #0d1117;       /* Primary app bg  (GitHub Dark bg)  */
+    --surface: #161b22;          /* Cards / panels                     */
+    --surface-elevated: #1c2128; /* Raised cards, dropdowns            */
+    --surface-overlay: #1f2937;  /* Modals, popovers                   */
+    --surface-subtle: rgba(30, 39, 55, 0.6); /* Tinted panel bg        */
+    --surface-dark: #0d1117;
+
+    /* --- Borders --- */
+    --border: #30363d;           /* Subtle divider                     */
+    --border-hover: #484f58;     /* On hover                           */
+    --border-strong: #6e7681;    /* High contrast border               */
+
+    /* --- Text Colors --- */
+    --text-primary: #e6edf3;     /* Bright-ish white (not stark)       */
+    --text-secondary: #8d96a0;   /* Muted body text                    */
+    --text-muted: #545d68;       /* Placeholder / disabled             */
+    --text-inverse: #0d1117;
+
+    /* --- Brand Colors — slightly lighter for dark bg --- */
+    --primary: #38bdf8;          /* Sky-400: pops on dark bg           */
+    --primary-dark: #0ea5e9;
+    --primary-light: rgba(56, 189, 248, 0.12);
+
+    --accent: #2dd4bf;           /* Teal-400                           */
+    --accent-dark: #14b8a6;
+    --accent-light: rgba(45, 212, 191, 0.12);
+
+    --highlight: #818cf8;        /* Indigo-400                         */
+    --highlight-dark: #6366f1;
+    --highlight-light: rgba(129, 140, 248, 0.12);
+
+    /* --- Gradient Colors --- */
+    --gradient-start: #38bdf8;
+    --gradient-end: #2dd4bf;
+    --gradient-primary: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+    --gradient-accent: linear-gradient(135deg, #818cf8 0%, #38bdf8 100%);
+    --gradient-surface: linear-gradient(180deg, rgba(22, 27, 34, 0.9) 0%, rgba(22, 27, 34, 0.7) 100%);
+
+    /* --- Glassmorphism (dark-aware) --- */
+    --glass-surface: rgba(22, 27, 34, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+
+    /* --- Semantic Colors (softened for dark bg) --- */
+    --success: #34d399;
+    --success-light: rgba(52, 211, 153, 0.12);
+    --warning: #fbbf24;
+    --warning-light: rgba(251, 191, 36, 0.12);
+    --error: #f87171;
+    --error-light: rgba(248, 113, 113, 0.12);
+    --info: #60a5fa;
+    --info-light: rgba(96, 165, 250, 0.12);
+
+    /* --- Shadows (stronger on dark) --- */
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 20px -3px rgba(0, 0, 0, 0.5), 0 4px 8px -4px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 20px 30px -5px rgba(0, 0, 0, 0.6), 0 8px 12px -6px rgba(0, 0, 0, 0.4);
+    --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.2);
 }
+
+/* Dark mode scrollbar */
+body.dark-theme::-webkit-scrollbar-track {
+    background: var(--surface);
+}
+body.dark-theme::-webkit-scrollbar-thumb {
+    background: var(--border-hover);
+}
+body.dark-theme::-webkit-scrollbar-thumb:hover {
+    background: var(--border-strong);
+}
+
+/* Fix browser autofill on dark inputs */
+body.dark-theme input:-webkit-autofill,
+body.dark-theme input:-webkit-autofill:hover,
+body.dark-theme input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text-primary);
+    -webkit-box-shadow: 0 0 0px 1000px var(--surface-elevated) inset;
+    box-shadow: 0 0 0px 1000px var(--surface-elevated) inset;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
 
 * {
     box-sizing: border-box;
@@ -24,7 +103,6 @@ body {
     font-family: var(--font-family);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
-    /* Prevent horizontal scrollbar */
     width: 100%;
 }
 
@@ -35,10 +113,30 @@ h4,
 h5,
 h6 {
     margin: 0;
-    font-weight: 600;
+    font-weight: 700;
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
 }
 
 button {
     font-family: inherit;
     cursor: pointer;
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
 }

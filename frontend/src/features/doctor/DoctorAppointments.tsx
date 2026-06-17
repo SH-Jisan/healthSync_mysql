@@ -26,7 +26,7 @@ export default function DoctorAppointments() {
         if (!user) return;
 
         const { data, error } = await supabase
-            .from('appointments')
+            .from('Appointment')
             .select('*, profiles:patient_id(full_name, phone, blood_group)')
             .eq('doctor_id', user.id)
             .order('appointment_date', { ascending: true });
@@ -37,6 +37,37 @@ export default function DoctorAppointments() {
         setLoading(false);
     };
 
+    // Rescheduling states
+    const [rescheduleAppointment, setRescheduleAppointment] = useState<AppointmentWithPatient | null>(null);
+    const [rescheduleDate, setRescheduleDate] = useState('');
+    const [rescheduling, setRescheduling] = useState(false);
+
+    const handleOpenReschedule = (app: AppointmentWithPatient) => {
+        setRescheduleAppointment(app);
+        setRescheduleDate(app.appointment_date ? new Date(app.appointment_date).toISOString().slice(0, 16) : '');
+    };
+
+    const handleSaveReschedule = async () => {
+        if (!rescheduleAppointment || !rescheduleDate) return;
+        setRescheduling(true);
+        try {
+            const { error } = await supabase
+                .from('Appointment')
+                .update({ appointment_date: rescheduleDate })
+                .eq('id', rescheduleAppointment.id);
+
+            if (error) throw error;
+            alert(t('common.success') || "Appointment rescheduled successfully!");
+            setRescheduleAppointment(null);
+            fetchAppointments();
+        } catch (err: any) {
+            console.error(err);
+            alert(t('common.error') || "Failed to reschedule appointment.");
+        } finally {
+            setRescheduling(false);
+        }
+    };
+
     useEffect(() => {
         fetchAppointments();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -44,7 +75,7 @@ export default function DoctorAppointments() {
 
     const updateStatus = async (id: string, status: 'Accepted' | 'CANCELLED') => {
         const { error } = await supabase
-            .from('appointments')
+            .from('Appointment')
             .update({ status })
             .eq('id', id);
 
@@ -128,9 +159,55 @@ export default function DoctorAppointments() {
                                         <XCircle size={20} weight="fill" /> {t('dashboard.doctor.appointments.cancelled')}
                                     </span>
                                 )}
+
+                                {app.status !== 'CANCELLED' && (
+                                    <button
+                                        onClick={() => handleOpenReschedule(app)}
+                                        className={styles.rescheduleBtn}
+                                    >
+                                        Reschedule
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Reschedule Modal */}
+            {rescheduleAppointment && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
+                        <h3 className={styles.modalTitle}>Reschedule Appointment</h3>
+                        <p style={{ fontSize: '0.9rem', color: '#64748B', marginBottom: '1.25rem' }}>
+                            Patient: {rescheduleAppointment.profiles?.full_name}
+                        </p>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Choose New Date & Time</label>
+                            <input 
+                                type="datetime-local" 
+                                value={rescheduleDate}
+                                onChange={e => setRescheduleDate(e.target.value)}
+                                className={styles.input}
+                            />
+                        </div>
+                        <div className={styles.modalActions}>
+                            <button 
+                                onClick={() => setRescheduleAppointment(null)}
+                                className={styles.cancelModalBtn}
+                                disabled={rescheduling}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleSaveReschedule}
+                                className={styles.saveBtn}
+                                disabled={rescheduling || !rescheduleDate}
+                            >
+                                {rescheduling ? "Saving..." : "Confirm"}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

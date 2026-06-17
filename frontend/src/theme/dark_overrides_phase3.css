@@ -1,0 +1,365 @@
+/* ==========================================================================
+   DARK MODE OVERRIDES — PHASE 3
+   Targeted fixes for every hardcoded color found in feature CSS modules.
+   Covers: Timeline, Doctor modals, Hospital, Diagnostic, Appointments.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   EVENT DETAILS MODAL — Timeline feature
+   -------------------------------------------------------------------------- */
+/* Close button (#FEE2E2 red) */
+body.dark-theme [class*="closeBtn"] {
+    background: var(--error-light) !important;
+    color: var(--error) !important;
+    border-color: rgba(248, 113, 113, 0.3) !important;
+}
+body.dark-theme [class*="closeBtn"]:hover {
+    background: var(--error) !important;
+    color: white !important;
+    border-color: var(--error) !important;
+}
+/* Tabs bar (rgba(255,255,255,0.3)) */
+body.dark-theme [class*="tabs"] {
+    border-bottom-color: var(--border) !important;
+}
+/* Event info sections (#F8FAFC panels) */
+body.dark-theme [class*="infoBox"],
+body.dark-theme [class*="sectionBox"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+}
+/* Severity badges (#FFEDD5 = orange, #F8FAFC = slate) */
+body.dark-theme [class*="severityLow"],
+body.dark-theme [class*="severityMild"] {
+    background: var(--warning-light) !important;
+    color: var(--warning) !important;
+}
+body.dark-theme [class*="severityHigh"],
+body.dark-theme [class*="severityCritical"] {
+    background: var(--error-light) !important;
+    color: var(--error) !important;
+}
+/* Status chips (colors like #F1F5F9, #FFEDD5, #dcfce7, #fef9c3, #fee2e2) */
+body.dark-theme [class*="statusChip"],
+body.dark-theme [class*="statusTag"],
+body.dark-theme [class*="chip"] {
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="statusActive"],
+body.dark-theme [class*="chipActive"],
+body.dark-theme [class*="chipGreen"],
+body.dark-theme [class*="chipSuccess"] {
+    background: var(--success-light) !important;
+    color: var(--success) !important;
+}
+body.dark-theme [class*="statusWarning"],
+body.dark-theme [class*="chipWarning"],
+body.dark-theme [class*="chipAmber"],
+body.dark-theme [class*="chipYellow"] {
+    background: var(--warning-light) !important;
+    color: var(--warning) !important;
+}
+body.dark-theme [class*="statusError"],
+body.dark-theme [class*="chipError"],
+body.dark-theme [class*="chipRed"],
+body.dark-theme [class*="chipDanger"] {
+    background: var(--error-light) !important;
+    color: var(--error) !important;
+}
+body.dark-theme [class*="statusNeutral"],
+body.dark-theme [class*="chipNeutral"],
+body.dark-theme [class*="chipDefault"],
+body.dark-theme [class*="chipGray"] {
+    background: var(--surface-elevated) !important;
+    color: var(--text-secondary) !important;
+}
+/* Cancel button in modals (#F1F5F9) */
+body.dark-theme [class*="cancelModalBtn"],
+body.dark-theme [class*="discardBtn"],
+body.dark-theme [class*="secondaryBtn"] {
+    background: var(--surface-elevated) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="cancelModalBtn"]:hover,
+body.dark-theme [class*="discardBtn"]:hover,
+body.dark-theme [class*="secondaryBtn"]:hover {
+    background: var(--surface-overlay) !important;
+}
+/* Progress bars (#94A3B8 track, #0EA5E9 fill) */
+body.dark-theme [class*="progressTrack"],
+body.dark-theme [class*="progressBar"] {
+    background: var(--border) !important;
+}
+body.dark-theme [class*="progressFill"] {
+    background: var(--primary) !important;
+}
+
+/* --------------------------------------------------------------------------
+   DOCTOR APPOINTMENTS — teal/green/red/blue status badges 
+   -------------------------------------------------------------------------- */
+/* Diagnostic icon (#E0F2F1) */
+body.dark-theme [class*="diagnosticIcon"],
+body.dark-theme [class*="tealIcon"] {
+    background: var(--accent-light) !important;
+    color: var(--accent) !important;
+    border-color: rgba(45, 212, 191, 0.2) !important;
+}
+/* Confirmed (#DCFCE7 = green) */
+body.dark-theme [class*="confirmedBadge"],
+body.dark-theme [class*="confirmedTag"] {
+    background: var(--success-light) !important;
+    color: var(--success) !important;
+}
+/* Cancelled (#FEE2E2 = red) */
+body.dark-theme [class*="cancelledBadge"],
+body.dark-theme [class*="cancelledTag"] {
+    background: var(--error-light) !important;
+    color: var(--error) !important;
+}
+/* Pending (#EFF6FF = blue) */
+body.dark-theme [class*="pendingBlue"],
+body.dark-theme [class*="pendingTag"] {
+    background: var(--info-light) !important;
+    color: var(--info) !important;
+}
+/* Cancel modal button (#F1F5F9, #E2E8F0) */
+body.dark-theme [class*="cancelAppointmentBtn"] {
+    background: var(--surface-elevated) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border) !important;
+}
+
+/* --------------------------------------------------------------------------
+   DOCTOR MODALS (DoctorModals.module.css)
+   -------------------------------------------------------------------------- */
+/* Delete/danger zone (#fef2f2) */
+body.dark-theme [class*="deleteZone"],
+body.dark-theme [class*="warningBox"],
+body.dark-theme [class*="alertBox"] {
+    background: var(--error-light) !important;
+    border-color: rgba(248, 113, 113, 0.2) !important;
+}
+/* Progress step track (#cbd5e1) */
+body.dark-theme [class*="stepTrack"],
+body.dark-theme [class*="trackLine"] {
+    background: var(--border) !important;
+}
+/* Info card (#F8FAFC) */
+body.dark-theme [class*="infoChip"],
+body.dark-theme [class*="detailChip"] {
+    background: var(--surface-elevated) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border) !important;
+}
+
+/* --------------------------------------------------------------------------
+   HOSPITAL PAGES (HospitalOverview, HospitalPatients, HospitalDoctors, HospitalBloodBank)
+   -------------------------------------------------------------------------- */
+/* Teal stat card (#E0F2F1) */
+body.dark-theme [class*="statCardTeal"],
+body.dark-theme [class*="cardTeal"] {
+    background: var(--accent-light) !important;
+    border-color: rgba(45, 212, 191, 0.2) !important;
+}
+/* Purple stat card (#F3E8FF) */
+body.dark-theme [class*="statCardPurple"],
+body.dark-theme [class*="cardPurple"] {
+    background: var(--highlight-light) !important;
+    border-color: rgba(129, 140, 248, 0.2) !important;
+}
+/* Orange stat card (#FFEDD5) */
+body.dark-theme [class*="statCardOrange"],
+body.dark-theme [class*="cardOrange"] {
+    background: var(--warning-light) !important;
+    border-color: rgba(251, 191, 36, 0.2) !important;
+}
+/* Active/green patient (#F0FDFA) */
+body.dark-theme [class*="activePatient"],
+body.dark-theme [class*="activeRow"] {
+    background: var(--accent-light) !important;
+    border-color: rgba(45, 212, 191, 0.2) !important;
+}
+/* Red/cancelled (#FEE2E2) */
+body.dark-theme [class*="dischargedRow"],
+body.dark-theme [class*="inactiveRow"] {
+    background: var(--error-light) !important;
+    border-color: rgba(248, 113, 113, 0.2) !important;
+}
+/* Doctor icon (#EFF6FF) */
+body.dark-theme [class*="doctorIcon"],
+body.dark-theme [class*="staffIcon"] {
+    background: var(--info-light) !important;
+    color: var(--info) !important;
+}
+/* Blood bank (#FEE2E2) */
+body.dark-theme [class*="bloodBankItem"],
+body.dark-theme [class*="bloodCell"] {
+    background: var(--error-light) !important;
+    border-color: rgba(248, 113, 113, 0.2) !important;
+}
+
+/* --------------------------------------------------------------------------
+   DIAGNOSTIC PAGES (DiagnosticSearch, DiagnosticPatientView)
+   -------------------------------------------------------------------------- */
+/* Teal icon (#E0F2F1) */
+body.dark-theme [class*="diagnosticLogo"],
+body.dark-theme [class*="centerIcon"] {
+    background: var(--accent-light) !important;
+    color: var(--accent) !important;
+}
+/* Status badges (dcfce7=success, fee2e2=error) */
+body.dark-theme [class*="uploadedBadge"],
+body.dark-theme [class*="readyBadge"],
+body.dark-theme [class*="completedBadge"] {
+    background: var(--success-light) !important;
+    color: var(--success) !important;
+}
+body.dark-theme [class*="failedBadge"],
+body.dark-theme [class*="errorBadge"],
+body.dark-theme [class*="rejectedBadge"] {
+    background: var(--error-light) !important;
+    color: var(--error) !important;
+}
+
+/* --------------------------------------------------------------------------
+   DOCTOR CHAMBERS — delete hover (#FEE2E2)
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="chamberDeleteBtn"]:hover,
+body.dark-theme [class*="removeChamberBtn"]:hover {
+    background: var(--error-light) !important;
+    color: var(--error) !important;
+}
+
+/* --------------------------------------------------------------------------
+   GLOBAL — Timeline Timeline tile status colors
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="tileOverdue"],
+body.dark-theme [class*="tileCritical"] {
+    background: var(--error-light) !important;
+}
+body.dark-theme [class*="tilePending"],
+body.dark-theme [class*="tileWarning"] {
+    background: var(--warning-light) !important;
+}
+body.dark-theme [class*="tileNormal"],
+body.dark-theme [class*="tileHealthy"] {
+    background: var(--success-light) !important;
+}
+
+/* --------------------------------------------------------------------------
+   PATIENT PRESCRIPTIONS — status indicators
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="dueTag"],
+body.dark-theme [class*="overduePill"] {
+    background: var(--error-light) !important;
+    color: var(--error) !important;
+}
+body.dark-theme [class*="refillPill"],
+body.dark-theme [class*="lowStockPill"] {
+    background: var(--warning-light) !important;
+    color: var(--warning) !important;
+}
+
+/* --------------------------------------------------------------------------
+   MISC — Any remaining white-ish sections we missed
+   -------------------------------------------------------------------------- */
+/* Generic "white" class names used in some components */
+body.dark-theme [class*="whiteCard"],
+body.dark-theme [class*="whiteBox"],
+body.dark-theme [class*="whiteBg"] {
+    background: var(--surface) !important;
+}
+/* Popovers and tooltips */
+body.dark-theme [class*="popover"],
+body.dark-theme [class*="tooltip"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+    color: var(--text-primary) !important;
+}
+/* Accordion items */
+body.dark-theme [class*="accordion"],
+body.dark-theme [class*="accordionItem"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="accordionHeader"] {
+    background: var(--surface-elevated) !important;
+}
+/* Tag/Chip components */
+body.dark-theme [class*="tagItem"],
+body.dark-theme [class*="filterTag"] {
+    background: var(--surface-elevated) !important;
+    border-color: var(--border) !important;
+    color: var(--text-primary) !important;
+}
+body.dark-theme [class*="tagItem"]:hover,
+body.dark-theme [class*="filterTag"]:hover {
+    background: var(--surface-overlay) !important;
+    border-color: var(--border-hover) !important;
+}
+/* Specific: delete button hover red (pattern found in DoctorChambers) */
+body.dark-theme [class*="deleteHover"]:hover,
+body.dark-theme [class*="removeBtn"]:hover {
+    background: var(--error-light) !important;
+    color: var(--error) !important;
+    border-color: rgba(248, 113, 113, 0.2) !important;
+}
+/* Pagination */
+body.dark-theme [class*="pagination"],
+body.dark-theme [class*="pageControl"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="pageBtn"],
+body.dark-theme [class*="pageNumber"] {
+    background: transparent !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border) !important;
+}
+body.dark-theme [class*="pageBtn"]:hover,
+body.dark-theme [class*="pageNumber"]:hover {
+    background: var(--surface-elevated) !important;
+    color: var(--text-primary) !important;
+}
+body.dark-theme [class*="pageBtnActive"],
+body.dark-theme [class*="pageNumberActive"],
+body.dark-theme [class*="pageActive"] {
+    background: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
+}
+
+/* --------------------------------------------------------------------------
+   FIX: Signin/Signup page containers that might have white background
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="authPage"],
+body.dark-theme [class*="loginPage"],
+body.dark-theme [class*="signupPage"] {
+    background: var(--background) !important;
+}
+body.dark-theme [class*="signupCard"],
+body.dark-theme [class*="loginCard"],
+body.dark-theme [class*="authCard"] {
+    background: var(--surface) !important;
+    border-color: var(--border) !important;
+}
+
+/* --------------------------------------------------------------------------
+   SIGNUP PAGE — step indicators (#F9FAFB inputs, step indicators)
+   -------------------------------------------------------------------------- */
+body.dark-theme [class*="stepIndicator"],
+body.dark-theme [class*="stepDot"] {
+    background: var(--border) !important;
+    color: var(--text-muted) !important;
+}
+body.dark-theme [class*="stepActive"],
+body.dark-theme [class*="stepDotActive"] {
+    background: var(--primary) !important;
+    color: white !important;
+}
+body.dark-theme [class*="stepComplete"],
+body.dark-theme [class*="stepDotComplete"] {
+    background: var(--success) !important;
+    color: white !important;
+}

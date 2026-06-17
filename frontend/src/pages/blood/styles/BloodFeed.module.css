@@ -31,13 +31,13 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: #FEF2F2;
-    color: #EF4444;
+    background: var(--error-light);
+    color: var(--error);
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 700;
-    border: 1px solid #FECACA;
+    border: 1px solid rgba(248, 113, 113, 0.3);
 }
 
 .pulseDot {
@@ -78,8 +78,8 @@
 }
 
 .cardCritical {
-    border-color: #FECACA;
-    background: linear-gradient(to right, rgba(255, 255, 255, 0.9), rgba(254, 242, 242, 0.5));
+    border-color: rgba(248, 113, 113, 0.3);
+    background: linear-gradient(to right, var(--surface), var(--error-light));
 }
 
 .cardHeader {
@@ -126,8 +126,8 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    background: #FEF2F2;
-    color: #EF4444;
+    background: var(--error-light);
+    color: var(--error);
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 0.85rem;
@@ -160,9 +160,9 @@
 }
 
 .bgCritical {
-    border-color: #EF4444;
-    color: #EF4444;
-    background: #FEF2F2;
+    border-color: var(--error);
+    color: var(--error);
+    background: var(--error-light);
 }
 
 .requestDetails {
@@ -189,7 +189,7 @@
 
 .cardFooter {
     padding: 1rem 1.5rem;
-    background: rgba(255, 255, 255, 0.4);
+    background: var(--surface-elevated);
     display: flex;
     justify-content: flex-end;
     border-top: 1px solid var(--border);
@@ -207,12 +207,12 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 6px rgba(0, 121, 107, 0.2);
+    box-shadow: 0 4px 6px rgba(2, 132, 199, 0.2);
 }
 
 .donateBtn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 121, 107, 0.3);
+    box-shadow: 0 6px 12px rgba(2, 132, 199, 0.3);
 }
 
 .btnCritical {
@@ -228,6 +228,6 @@
     text-align: center;
     padding: 4rem 2rem;
     color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.5);
+    background: var(--surface);
     border-radius: var(--radius-xl);
 }

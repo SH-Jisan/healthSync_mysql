@@ -6,7 +6,8 @@ import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import {
     X, Printer, Calendar, User, FileText, Image as ImageIcon,
-    DownloadSimple, Heartbeat, Thermometer, Drop, Eye, CheckCircle, FirstAid, WarningCircle
+    DownloadSimple, Heartbeat, Thermometer, Drop, Eye, CheckCircle, FirstAid, WarningCircle,
+    Pencil, Trash
 } from 'phosphor-react';
 import { format, isValid } from 'date-fns';
 import { supabase } from '@/shared/lib/supabaseClient';
@@ -22,6 +23,8 @@ const PrintablePrescription = React.lazy(() => import('./components/PrintablePre
 interface EventDetailsProps {
     event: MedicalEvent;
     onClose: () => void;
+    onUpdate?: () => void;
+    onDelete?: () => void;
 }
 
 const safeFormat = (dateString: string | undefined, dateFormat: string) => {
@@ -44,21 +47,133 @@ const VitalCard = React.memo(({ icon, label, value, unit, color, bg }: any) => (
 ));
 
 const EventDetailsModal = React.forwardRef<HTMLDivElement, EventDetailsProps>(function EventDetailsModal(
-    { event, onClose },
+    { event, onClose, onUpdate, onDelete },
     ref
 ) {
+    // 0. Local state for the event to enable instant UI updates
+    const [currentEvent, setCurrentEvent] = useState<MedicalEvent>(event);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
     // 1. Language Setup
     const { t, i18n } = useTranslation();
     const isBangla = i18n.language === 'bn';
 
+    useEffect(() => {
+        const fetchUser = async () => {
+            const { data } = await supabase.auth.getUser();
+            if (data?.user) {
+                setCurrentUserId(data.user.id);
+            }
+        };
+        fetchUser();
+    }, []);
+
+    const isAuthorized = currentUserId && (
+        currentUserId === (currentEvent.uploader?.id || (currentEvent as any).uploader_id) || 
+        currentUserId === currentEvent.patient_id
+    );
+
     // 2. Tab Setup
     const [activeTab, setActiveTab] = useState<'overview' | 'medicines' | 'analysis' | 'file' | 'prescription'>(
-        event.event_type === 'PRESCRIPTION' ? 'prescription' : 'overview'
+        currentEvent.event_type === 'PRESCRIPTION' ? 'prescription' : 'overview'
     );
     const [isPrinting, setIsPrinting] = useState(false);
 
+    // Editing States
+    const [isEditing, setIsEditing] = useState(false);
+    const [editTitle, setEditTitle] = useState(currentEvent.title);
+    const [editEventType, setEditEventType] = useState(currentEvent.event_type);
+    const [editEventDate, setEditEventDate] = useState(currentEvent.event_date ? new Date(currentEvent.event_date).toISOString().split('T')[0] : '');
+    const [editSeverity, setEditSeverity] = useState(currentEvent.severity);
+    const [editSummary, setEditSummary] = useState(currentEvent.summary || '');
+    const [editBp, setEditBp] = useState(currentEvent.vitals?.bp || '');
+    const [editHr, setEditHr] = useState(currentEvent.vitals?.hr || '');
+    const [editTemp, setEditTemp] = useState(currentEvent.vitals?.temp || '');
+    const [editWeight, setEditWeight] = useState(currentEvent.vitals?.weight || '');
+    const [saving, setSaving] = useState(false);
+
+    const startEditing = () => {
+        setEditTitle(currentEvent.title);
+        setEditEventType(currentEvent.event_type);
+        setEditEventDate(currentEvent.event_date ? new Date(currentEvent.event_date).toISOString().split('T')[0] : '');
+        setEditSeverity(currentEvent.severity);
+        setEditSummary(currentEvent.summary || '');
+        setEditBp(currentEvent.vitals?.bp || '');
+        setEditHr(currentEvent.vitals?.hr || '');
+        setEditTemp(currentEvent.vitals?.temp || '');
+        setEditWeight(currentEvent.vitals?.weight || '');
+        setIsEditing(true);
+    };
+
+    const handleSaveEdit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editTitle.trim()) return alert("Title is required");
+        if (!editEventDate) return alert("Date is required");
+
+        setSaving(true);
+        try {
+            const vitalsObj = (editBp || editHr || editTemp || editWeight) ? {
+                bp: editBp || undefined,
+                hr: editHr || undefined,
+                temp: editTemp || undefined,
+                weight: editWeight || undefined
+            } : undefined;
+
+            const updates = {
+                title: editTitle.trim(),
+                event_type: editEventType,
+                event_date: editEventDate,
+                severity: editSeverity,
+                summary: editSummary.trim(),
+                vitals: vitalsObj
+            };
+
+            const { error } = await supabase
+                .from('medical_events')
+                .update(updates)
+                .eq('id', currentEvent.id);
+
+            if (error) throw error;
+
+            setCurrentEvent(prev => ({
+                ...prev,
+                ...updates,
+                vitals: vitalsObj
+            }));
+            
+            setIsEditing(false);
+            alert("Medical event updated successfully!");
+            if (onUpdate) onUpdate();
+        } catch (err: any) {
+            console.error(err);
+            alert("Failed to update: " + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDeleteEvent = async () => {
+        if (!confirm("Are you sure you want to permanently delete this medical event? This action cannot be undone.")) return;
+
+        try {
+            const { error } = await supabase
+                .from('medical_events')
+                .delete()
+                .eq('id', currentEvent.id);
+
+            if (error) throw error;
+
+            alert("Medical event deleted successfully.");
+            if (onDelete) onDelete();
+            onClose();
+        } catch (err: any) {
+            console.error(err);
+            alert("Failed to delete: " + err.message);
+        }
+    };
+
     // 3. AI Data Extraction
-    const aiData = event.ai_details;
+    const aiData = currentEvent.ai_details;
 
     // Dynamic Content based on Language
     const simpleExplanation = isBangla
@@ -113,9 +228,9 @@ const EventDetailsModal = React.forwardRef<HTMLDivElement, EventDetailsProps>(fu
     }, [isPrinting]);
 
     const handleDownload = async () => {
-        if (event.attachment_urls && event.attachment_urls.length > 0) {
+        if (currentEvent.attachment_urls && currentEvent.attachment_urls.length > 0) {
             try {
-                const urlOrPath = event.attachment_urls[0];
+                const urlOrPath = currentEvent.attachment_urls[0];
                 const path = getStoragePath(urlOrPath);
 
                 console.log('Downloading file from path:', path);
@@ -152,7 +267,7 @@ const EventDetailsModal = React.forwardRef<HTMLDivElement, EventDetailsProps>(fu
 
     // Tab Logic
     const tabs = ['overview', 'medicines', 'analysis', 'file'];
-    if (event.event_type === 'PRESCRIPTION') {
+    if (currentEvent.event_type === 'PRESCRIPTION') {
         tabs.unshift('prescription');
     }
 
@@ -181,19 +296,25 @@ const EventDetailsModal = React.forwardRef<HTMLDivElement, EventDetailsProps>(fu
                     {/* Header */}
                     <div className={styles.header}>
                         <div className={styles.headerInfo}>
-                            <div className={`${styles.iconBox} ${event.event_type === 'PRESCRIPTION' ? styles.prescriptionIcon : styles.reportIcon}`}>
-                                {event.event_type === 'PRESCRIPTION' ? <FileText size={28} /> : <Heartbeat size={28} />}
+                            <div className={`${styles.iconBox} ${currentEvent.event_type === 'PRESCRIPTION' ? styles.prescriptionIcon : styles.reportIcon}`}>
+                                {currentEvent.event_type === 'PRESCRIPTION' ? <FileText size={28} /> : <Heartbeat size={28} />}
                             </div>
                             <div>
-                                <h2 className={styles.title}>{event.title}</h2>
+                                <h2 className={styles.title}>{currentEvent.title}</h2>
                                 <div className={styles.meta}>
-                                    <span className={styles.metaItem}><Calendar size={16} /> {safeFormat(event.event_date, 'dd MMM yyyy')}</span>
-                                    <span className={styles.metaItem}><User size={16} /> Dr. {event.uploader?.full_name || 'System/Self'}</span>
+                                    <span className={styles.metaItem}><Calendar size={16} /> {safeFormat(currentEvent.event_date, 'dd MMM yyyy')}</span>
+                                    <span className={styles.metaItem}><User size={16} /> Dr. {currentEvent.uploader?.full_name || 'System/Self'}</span>
                                 </div>
                             </div>
                         </div>
 
                         <div className={styles.actions}>
+                            {isAuthorized && !isEditing && (
+                                <>
+                                    <button onClick={startEditing} title="Edit Event" className={`${styles.iconBtn} ${styles.editBtn}`}><Pencil size={20} /></button>
+                                    <button onClick={handleDeleteEvent} title="Delete Event" className={`${styles.iconBtn} ${styles.deleteBtn}`}><Trash size={20} /></button>
+                                </>
+                            )}
                             <button onClick={handleDownload} title="Download File" className={styles.iconBtn}><DownloadSimple size={20} /></button>
                             <button onClick={handlePrint} title="Print" className={styles.iconBtn}><Printer size={20} /></button>
                             <button onClick={onClose} title="Close" className={`${styles.iconBtn} ${styles.closeBtn}`}><X size={20} /></button>
@@ -201,248 +322,370 @@ const EventDetailsModal = React.forwardRef<HTMLDivElement, EventDetailsProps>(fu
                     </div>
 
                     {/* Tabs */}
-                    <div className={styles.tabs}>
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab as any)}
-                                className={`${styles.tabBtn} ${activeTab === tab ? styles.tabActive : ''}`}
-                            >
-                                {/* Simple Tab Localization */}
-                                {tab === 'analysis' ? (isBangla ? 'বিশ্লেষণ (AI)' : 'AI Analysis') :
-                                    tab === 'overview' ? (isBangla ? 'ওভারভিউ' : 'Overview') :
-                                        tab === 'medicines' ? (isBangla ? 'ঔষধ' : 'Medicines') :
-                                            tab === 'file' ? (isBangla ? 'ফাইল' : 'File') :
-                                                tab === 'prescription' ? (isBangla ? 'প্রেসক্রিপশন' : 'Prescription') :
-                                                    tab.charAt(0).toUpperCase() + tab.slice(1)}
-                            </button>
-                        ))}
-                    </div>
+                    {!isEditing && (
+                        <div className={styles.tabs}>
+                            {tabs.map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab as any)}
+                                    className={`${styles.tabBtn} ${activeTab === tab ? styles.tabActive : ''}`}
+                                >
+                                    {/* Simple Tab Localization */}
+                                    {tab === 'analysis' ? (isBangla ? 'বিশ্লেষণ (AI)' : 'AI Analysis') :
+                                        tab === 'overview' ? (isBangla ? 'ওভারভিউ' : 'Overview') :
+                                            tab === 'medicines' ? (isBangla ? 'ঔষধ' : 'Medicines') :
+                                                tab === 'file' ? (isBangla ? 'ফাইল' : 'File') :
+                                                    tab === 'prescription' ? (isBangla ? 'প্রেসক্রিপশন' : 'Prescription') :
+                                                        tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Content Area */}
                     <div className={styles.content}>
-
-                        {/* TAB: PRESCRIPTION */}
-                        {activeTab === 'prescription' && (
-                            // Use the same component structure but inside the modal
-                            // Since PrintablePrescription styles are mostly generic, we can reuse logic or just keep the inline code if extracted
-                            // Actually, for consistency with 'Print', maybe we should use the PrintablePrescription *component* here too?
-                            // But PrintablePrescription has 'printOnly' class.
-                            // Let's keep the inline implementation but use extracted helpers where possible.
-                            <div className={styles.prescriptionView}>
-                                <div className={styles.prescriptionHeader}>
-                                    <div className={styles.brand}>
-                                        <h1>HealthSync</h1>
-                                        <p>Smart Healthcare Solution</p>
+                        {isEditing ? (
+                            <form onSubmit={handleSaveEdit} className={styles.editForm}>
+                                <h3 className={styles.editFormTitle}>Edit Medical Event</h3>
+                                
+                                <div className={styles.formField}>
+                                    <label className={styles.formLabel}>Title *</label>
+                                    <input 
+                                        type="text" 
+                                        value={editTitle} 
+                                        onChange={e => setEditTitle(e.target.value)} 
+                                        className={styles.formInput} 
+                                        required 
+                                    />
+                                </div>
+                                
+                                <div className={styles.formGrid}>
+                                    <div className={styles.formField}>
+                                        <label className={styles.formLabel}>Event Type *</label>
+                                        <select 
+                                            value={editEventType} 
+                                            onChange={e => setEditEventType(e.target.value as any)} 
+                                            className={styles.formInput}
+                                        >
+                                            <option value="REPORT">Diagnostic Report</option>
+                                            <option value="PRESCRIPTION">Prescription</option>
+                                            <option value="VACCINATION">Vaccination</option>
+                                            <option value="SURGERY">Surgery</option>
+                                            <option value="TEST_ORDER">Test Order</option>
+                                            <option value="GENERIC">Generic Record</option>
+                                        </select>
                                     </div>
-                                    <div className={styles.docInfo}>
-                                        <h3>Dr. {event.uploader?.full_name}</h3>
-                                        <p>{event.uploader?.specialty}</p>
-                                        <p>{safeFormat(event.event_date, 'dd MMM yyyy')}</p>
+                                    
+                                    <div className={styles.formField}>
+                                        <label className={styles.formLabel}>Event Date *</label>
+                                        <input 
+                                            type="date" 
+                                            value={editEventDate} 
+                                            onChange={e => setEditEventDate(e.target.value)} 
+                                            className={styles.formInput} 
+                                            required 
+                                        />
                                     </div>
                                 </div>
 
-                                <div className={styles.patientBar}>
-                                    <span><strong>Patient:</strong> {event.profiles?.full_name}</span>
-                                    <span><strong>Phone:</strong> {event.profiles?.phone}</span>
+                                <div className={styles.formGrid}>
+                                    <div className={styles.formField}>
+                                        <label className={styles.formLabel}>Severity</label>
+                                        <select 
+                                            value={editSeverity} 
+                                            onChange={e => setEditSeverity(e.target.value as any)} 
+                                            className={styles.formInput}
+                                        >
+                                            <option value="LOW">Low</option>
+                                            <option value="MEDIUM">Medium</option>
+                                            <option value="HIGH">High</option>
+                                        </select>
+                                    </div>
                                 </div>
 
-                                <div className={styles.rxSection}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <h2>Rx</h2>
-                                        {/* Use the safe/caution badge logic */}
-                                        {safetyStatus === 'Safe' && <span className={`${styles.safetyBadge} ${styles.safe}`}><CheckCircle size={16} weight="fill" /> Safe</span>}
-                                        {safetyStatus === 'Caution' && <span className={`${styles.safetyBadge} ${styles.caution}`}><WarningCircle size={16} weight="fill" /> Caution</span>}
-                                        {safetyStatus === 'Danger' && <span className={`${styles.safetyBadge} ${styles.danger}`}><WarningCircle size={16} weight="fill" /> Danger</span>}
-                                    </div>
+                                <div className={styles.formField}>
+                                    <label className={styles.formLabel}>Summary / Key Details</label>
+                                    <textarea 
+                                        value={editSummary} 
+                                        onChange={e => setEditSummary(e.target.value)} 
+                                        className={styles.formTextarea} 
+                                    />
+                                </div>
 
-                                    <div className={styles.rxList}>
-                                        {event.medicines && event.medicines.length > 0 ? (
-                                            event.medicines.map((med, i) => (
-                                                <div key={i} className={styles.medItem}>
-                                                    <strong>{med.name}</strong>
-                                                    <span>{med.dosage} — {med.duration}</span>
+                                <h4 className={styles.vitalsTitle}>Vitals (Optional)</h4>
+                                <div className={styles.formGrid}>
+                                    <div className={styles.formField}>
+                                        <label className={styles.formLabel}>Blood Pressure (mmHg)</label>
+                                        <input 
+                                            type="text" 
+                                            value={editBp} 
+                                            onChange={e => setEditBp(e.target.value)} 
+                                            className={styles.formInput} 
+                                            placeholder="e.g. 120/80" 
+                                        />
+                                    </div>
+                                    <div className={styles.formField}>
+                                        <label className={styles.formLabel}>Heart Rate (bpm)</label>
+                                        <input 
+                                            type="text" 
+                                            value={editHr} 
+                                            onChange={e => setEditHr(e.target.value)} 
+                                            className={styles.formInput} 
+                                            placeholder="e.g. 72" 
+                                        />
+                                    </div>
+                                    <div className={styles.formField}>
+                                        <label className={styles.formLabel}>Temperature (°F)</label>
+                                        <input 
+                                            type="text" 
+                                            value={editTemp} 
+                                            onChange={e => setEditTemp(e.target.value)} 
+                                            className={styles.formInput} 
+                                            placeholder="e.g. 98.6" 
+                                        />
+                                    </div>
+                                    <div className={styles.formField}>
+                                        <label className={styles.formLabel}>Weight (kg)</label>
+                                        <input 
+                                            type="text" 
+                                            value={editWeight} 
+                                            onChange={e => setEditWeight(e.target.value)} 
+                                            className={styles.formInput} 
+                                            placeholder="e.g. 70" 
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className={styles.formActions}>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setIsEditing(false)} 
+                                        className={styles.formCancelBtn}
+                                        disabled={saving}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit" 
+                                        className={styles.formSaveBtn}
+                                        disabled={saving}
+                                    >
+                                        {saving ? "Saving..." : "Save Changes"}
+                                    </button>
+                                </div>
+                            </form>
+                        ) : (
+                            <>
+                                {/* TAB: PRESCRIPTION */}
+                                {activeTab === 'prescription' && (
+                                    <div className={styles.prescriptionView}>
+                                        <div className={styles.prescriptionHeader}>
+                                            <div className={styles.brand}>
+                                                <h1>HealthSync</h1>
+                                                <p>Smart Healthcare Solution</p>
+                                            </div>
+                                            <div className={styles.docInfo}>
+                                                <h3>Dr. {currentEvent.uploader?.full_name}</h3>
+                                                <p>{currentEvent.uploader?.specialty}</p>
+                                                <p>{safeFormat(currentEvent.event_date, 'dd MMM yyyy')}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className={styles.patientBar}>
+                                            <span><strong>Patient:</strong> {currentEvent.profiles?.full_name}</span>
+                                            <span><strong>Phone:</strong> {currentEvent.profiles?.phone}</span>
+                                        </div>
+
+                                        <div className={styles.rxSection}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <h2>Rx</h2>
+                                                {safetyStatus === 'Safe' && <span className={`${styles.safetyBadge} ${styles.safe}`}><CheckCircle size={16} weight="fill" /> Safe</span>}
+                                                {safetyStatus === 'Caution' && <span className={`${styles.safetyBadge} ${styles.caution}`}><WarningCircle size={16} weight="fill" /> Caution</span>}
+                                                {safetyStatus === 'Danger' && <span className={`${styles.safetyBadge} ${styles.danger}`}><WarningCircle size={16} weight="fill" /> Danger</span>}
+                                            </div>
+
+                                            <div className={styles.rxList}>
+                                                {currentEvent.medicines && currentEvent.medicines.length > 0 ? (
+                                                    currentEvent.medicines.map((med, i) => (
+                                                        <div key={i} className={styles.medItem}>
+                                                            <strong>{med.name}</strong>
+                                                            <span>{med.dosage} — {med.duration}</span>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <p>{currentEvent.summary || currentEvent.extracted_text}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {simpleExplanation && (
+                                            <div className={styles.adviceBox}>
+                                                <h4>AI Explanation:</h4>
+                                                <p>{simpleExplanation}</p>
+                                            </div>
+                                        )}
+
+                                        <div className={styles.signatureArea}>
+                                            <div className={styles.sigLine}></div>
+                                            <p>Doctor's Signature</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* TAB: OVERVIEW */}
+                                {activeTab === 'overview' && (
+                                    <div className={styles.innerContent}>
+                                        {(currentEvent.vitals?.bp || currentEvent.vitals?.hr || currentEvent.vitals?.temp || currentEvent.vitals?.weight) && (
+                                            <div className={styles.vitalsGrid}>
+                                                <VitalCard icon={<Drop size={24} weight="fill" />} label="Blood Pressure" value={currentEvent.vitals?.bp || 'N/A'} unit={currentEvent.vitals?.bp ? 'mmHg' : ''} color="#EF4444" bg="#FEE2E2" />
+                                                <VitalCard icon={<Heartbeat size={24} weight="fill" />} label="Heart Rate" value={currentEvent.vitals?.hr || 'N/A'} unit={currentEvent.vitals?.hr ? 'bpm' : ''} color="#EC4899" bg="#FCE7F3" />
+                                                <VitalCard icon={<Thermometer size={24} weight="fill" />} label="Temperature" value={currentEvent.vitals?.temp || 'N/A'} unit={currentEvent.vitals?.temp ? '°F' : ''} color="#F59E0B" bg="#FEF3C7" />
+                                                <VitalCard icon={<Eye size={24} weight="fill" />} label="Weight" value={currentEvent.vitals?.weight || 'N/A'} unit={currentEvent.vitals?.weight ? 'kg' : ''} color="#10B981" bg="#D1FAE5" />
+                                            </div>
+                                        )}
+
+                                        {aiData ? (
+                                            <div className={styles.simpleCard}>
+                                                <div className={styles.simpleCardHeader}>
+                                                    <Drop size={32} color="#059669" weight="fill" />
+                                                    <div>
+                                                        <h3 className={styles.simpleCardTitle}>{isBangla ? 'সহজ ব্যাখ্যা' : 'Simple Explanation'}</h3>
+                                                        <p className={styles.simpleCardSubtitle}>{isBangla ? 'বাচ্চাদের মতো সহজ করে বুঝুন' : 'Easy to understand summary'}</p>
+                                                    </div>
                                                 </div>
-                                            ))
+                                                <div className={styles.simpleText}>
+                                                    "{simpleExplanation}"
+                                                </div>
+                                            </div>
                                         ) : (
-                                            <p>{event.summary || event.extracted_text}</p>
+                                            <div className={styles.summarySection}>
+                                                <h3 className={styles.sectionTitle}>
+                                                    <FileText size={24} color="var(--primary)" /> Medical Summary
+                                                </h3>
+                                                <p className={styles.summaryText}>
+                                                    {currentEvent.summary || 'No summary available provided by the doctor or AI.'}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {currentEvent.key_findings && currentEvent.key_findings.length > 0 && (
+                                            <div className={styles.findingTags} style={{ marginTop: '1rem', justifyContent: 'center' }}>
+                                                {currentEvent.key_findings.map((tag: string, i: number) => (
+                                                    <span key={i} className={styles.tag}>#{tag}</span>
+                                                ))}
+                                            </div>
                                         )}
                                     </div>
-                                </div>
-
-                                {/* Show AI Summary on Prescription if available */}
-                                {simpleExplanation && (
-                                    <div className={styles.adviceBox}>
-                                        <h4>AI Explanation:</h4>
-                                        <p>{simpleExplanation}</p>
-                                    </div>
                                 )}
 
-                                <div className={styles.signatureArea}>
-                                    <div className={styles.sigLine}></div>
-                                    <p>Doctor's Signature</p>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* TAB: OVERVIEW */}
-                        {activeTab === 'overview' && (
-                            <div className={styles.innerContent}>
-                                {/* Vitals */}
-                                {(event.vitals?.bp || event.vitals?.hr || event.vitals?.temp || event.vitals?.weight) && (
-                                    <div className={styles.vitalsGrid}>
-                                        <VitalCard icon={<Drop size={24} weight="fill" />} label="Blood Pressure" value={event.vitals?.bp || 'N/A'} unit={event.vitals?.bp ? 'mmHg' : ''} color="#EF4444" bg="#FEE2E2" />
-                                        <VitalCard icon={<Heartbeat size={24} weight="fill" />} label="Heart Rate" value={event.vitals?.hr || 'N/A'} unit={event.vitals?.hr ? 'bpm' : ''} color="#EC4899" bg="#FCE7F3" />
-                                        <VitalCard icon={<Thermometer size={24} weight="fill" />} label="Temperature" value={event.vitals?.temp || 'N/A'} unit={event.vitals?.temp ? '°F' : ''} color="#F59E0B" bg="#FEF3C7" />
-                                        <VitalCard icon={<Eye size={24} weight="fill" />} label="Weight" value={event.vitals?.weight || 'N/A'} unit={event.vitals?.weight ? 'kg' : ''} color="#10B981" bg="#D1FAE5" />
-                                    </div>
+                                {/* TAB: MEDICINES */}
+                                {activeTab === 'medicines' && (
+                                    <MedicineTable medicines={currentEvent.medicines} />
                                 )}
 
-                                {/* --- AI SIMPLE EXPLANATION --- */}
-                                {aiData ? (
-                                    <div className={styles.simpleCard}>
-                                        <div className={styles.simpleCardHeader}>
-                                            <Drop size={32} color="#059669" weight="fill" /> {/* Placeholder icon if Robot not imported used previously */}
-                                            <div>
-                                                <h3 className={styles.simpleCardTitle}>{isBangla ? 'সহজ ব্যাখ্যা' : 'Simple Explanation'}</h3>
-                                                <p className={styles.simpleCardSubtitle}>{isBangla ? 'বাচ্চাদের মতো সহজ করে বুঝুন' : 'Easy to understand summary'}</p>
-                                            </div>
-                                        </div>
-                                        <div className={styles.simpleText}>
-                                            "{simpleExplanation}"
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className={styles.summarySection}>
-                                        <h3 className={styles.sectionTitle}>
-                                            <FileText size={24} color="var(--primary)" /> Medical Summary
-                                        </h3>
-                                        <p className={styles.summaryText}>
-                                            {event.summary || 'No summary available provided by the doctor or AI.'}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Key Findings Tags */}
-                                {event.key_findings && event.key_findings.length > 0 && (
-                                    <div className={styles.findingTags} style={{ marginTop: '1rem', justifyContent: 'center' }}>
-                                        {event.key_findings.map((tag: string, i: number) => (
-                                            <span key={i} className={styles.tag}>#{tag}</span>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* TAB: MEDICINES */}
-                        {activeTab === 'medicines' && (
-                            <MedicineTable medicines={event.medicines} />
-                        )}
-
-                        {/* TAB: ANALYSIS (Enhanced with Disease Insight) */}
-                        {activeTab === 'analysis' && (
-                            <div className={styles.innerContent}>
-                                {aiData ? (
-                                    <>
-                                        {/* 1. Simple Summary Refresher */}
-                                        <div className={styles.simpleCard} style={{ background: '#F0F9FF', borderColor: '#BAE6FD' }}>
-                                            <div className={styles.simpleCardHeader}>
-                                                <CheckCircle size={24} color="#0284C7" weight="fill" />
-                                                <h3 className={styles.simpleCardTitle} style={{ color: '#0369A1' }}>
-                                                    {isBangla ? 'এক নজরে' : 'Overview'}
-                                                </h3>
-                                            </div>
-                                            <p style={{ margin: 0, color: '#075985' }}>{simpleExplanation}</p>
-                                        </div>
-
-                                        {/* 2. [NEW] Disease / Condition Insight Card */}
-                                        {diseaseInsight && (
-                                            <div className={styles.diseaseCard}>
-                                                <div className={styles.diseaseCardHeader}>
-                                                    <FirstAid size={24} color="#4338ca" weight="fill" />
-                                                    <h3 className={styles.diseaseCardTitle}>
-                                                        {isBangla ? 'সম্ভাব্য রোগ ও অবস্থা' : 'Condition Insight'}
-                                                    </h3>
+                                {/* TAB: ANALYSIS */}
+                                {activeTab === 'analysis' && (
+                                    <div className={styles.innerContent}>
+                                        {aiData ? (
+                                            <>
+                                                <div className={styles.simpleCard} style={{ background: '#F0F9FF', borderColor: '#BAE6FD' }}>
+                                                    <div className={styles.simpleCardHeader}>
+                                                        <CheckCircle size={24} color="#0284C7" weight="fill" />
+                                                        <h3 className={styles.simpleCardTitle} style={{ color: '#0369A1' }}>
+                                                            {isBangla ? 'এক নজরে' : 'Overview'}
+                                                        </h3>
+                                                    </div>
+                                                    <p style={{ margin: 0, color: '#075985' }}>{simpleExplanation}</p>
                                                 </div>
-                                                <DiseaseInsight insight={diseaseInsight} />
+
+                                                {diseaseInsight && (
+                                                    <div className={styles.diseaseCard}>
+                                                        <div className={styles.diseaseCardHeader}>
+                                                            <FirstAid size={24} color="#4338ca" weight="fill" />
+                                                            <h3 className={styles.diseaseCardTitle}>
+                                                                {isBangla ? 'সম্ভাব্য রোগ ও অবস্থা' : 'Condition Insight'}
+                                                            </h3>
+                                                        </div>
+                                                        <DiseaseInsight insight={diseaseInsight} />
+                                                    </div>
+                                                )}
+
+                                                <div className={styles.detailedSection}>
+                                                    <div className={styles.detailHeader}>
+                                                        <FileText size={24} color="var(--primary)" />
+                                                        <h3 className={styles.detailTitle}>
+                                                            {isBangla ? 'বিস্তারিত রিপোর্ট বিশ্লেষণ' : 'Detailed Report Analysis'}
+                                                        </h3>
+                                                    </div>
+                                                    <div className={styles.markdownContent}>
+                                                        {memoizedMarkdown}
+                                                    </div>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className={styles.analysisCard}>
+                                                <h3 style={{ marginTop: 0 }}>Raw Text Extraction (OCR)</h3>
+                                                <div className={styles.infoNote}>
+                                                    <WarningCircle size={16} style={{ verticalAlign: 'middle', marginRight: '5px' }} />
+                                                    Note: This text is automatically extracted from the image. It may contain multi-language text or errors.
+                                                </div>
+                                                <div className={styles.rawText}>
+                                                    {currentEvent.extracted_text || 'No text extracted from the document.'}
+                                                </div>
                                             </div>
                                         )}
-
-                                        {/* 3. Detailed Markdown Analysis */}
-                                        <div className={styles.detailedSection}>
-                                            <div className={styles.detailHeader}>
-                                                <FileText size={24} color="var(--primary)" />
-                                                <h3 className={styles.detailTitle}>
-                                                    {isBangla ? 'বিস্তারিত রিপোর্ট বিশ্লেষণ' : 'Detailed Report Analysis'}
-                                                </h3>
-                                            </div>
-                                            <div className={styles.markdownContent}>
-                                                {memoizedMarkdown}
-                                            </div>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className={styles.analysisCard}>
-                                        <h3 style={{ marginTop: 0 }}>Raw Text Extraction (OCR)</h3>
-                                        <div className={styles.infoNote}>
-                                            <WarningCircle size={16} style={{ verticalAlign: 'middle', marginRight: '5px' }} />
-                                            Note: This text is automatically extracted from the image. It may contain multi-language text or errors.
-                                        </div>
-                                        <div className={styles.rawText}>
-                                            {event.extracted_text || 'No text extracted from the document.'}
-                                        </div>
                                     </div>
                                 )}
-                            </div>
-                        )}
 
-                        {/* TAB: FILE */}
-                        {activeTab === 'file' && (
-                            <div className={styles.fileContainer}>
-                                {event.attachment_urls && event.attachment_urls.length > 0 ? (
-                                    (() => {
-                                        const url = getImageUrl(event.attachment_urls[0]);
-                                        if (!url) return null;
+                                {/* TAB: FILE */}
+                                {activeTab === 'file' && (
+                                    <div className={styles.fileContainer}>
+                                        {currentEvent.attachment_urls && currentEvent.attachment_urls.length > 0 ? (
+                                            (() => {
+                                                const url = getImageUrl(currentEvent.attachment_urls[0]);
+                                                if (!url) return null;
 
-                                        const isPdf = url.toLowerCase().includes('.pdf') ||
-                                            event.attachment_urls[0].toLowerCase().endsWith('.pdf');
+                                                const isPdf = url.toLowerCase().includes('.pdf') ||
+                                                    currentEvent.attachment_urls[0].toLowerCase().endsWith('.pdf');
 
-                                        if (isPdf) {
-                                            return (
-                                                <iframe
-                                                    src={`${url}#toolbar=0`}
-                                                    title="PDF Document"
-                                                    className={styles.attachmentImg} // Reusing class for size/fit
-                                                    style={{ height: '500px', border: 'none', width: '100%' }}
-                                                />
-                                            );
-                                        }
+                                                if (isPdf) {
+                                                    return (
+                                                        <iframe
+                                                            src={`${url}#toolbar=0`}
+                                                            title="PDF Document"
+                                                            className={styles.attachmentImg}
+                                                            style={{ height: '500px', border: 'none', width: '100%' }}
+                                                        />
+                                                    );
+                                                }
 
-                                        return (
-                                            <img
-                                                src={url}
-                                                alt="Document"
-                                                className={styles.attachmentImg}
-                                            />
-                                        );
-                                    })()
-                                ) : (
-                                    <div style={{ textAlign: 'center', color: '#94A3B8' }}>
-                                        <ImageIcon size={64} />
-                                        <p>No attachment found.</p>
+                                                return (
+                                                    <img
+                                                        src={url}
+                                                        alt="Document"
+                                                        className={styles.attachmentImg}
+                                                    />
+                                                );
+                                            })()
+                                        ) : (
+                                            <div style={{ textAlign: 'center', color: '#94A3B8' }}>
+                                                <ImageIcon size={64} />
+                                                <p>No attachment found.</p>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
-                            </div>
+                            </>
                         )}
                     </div>
                 </ErrorBoundary>
             </motion.div>
 
-            {/* Print Only Section - Lazy Loaded and only mounted when printing */}
+            {/* Print Only Section */}
             {isPrinting && (
                 <Suspense fallback={null}>
                     <PrintablePrescription
-                        event={event}
+                        event={currentEvent}
                         simpleExplanation={simpleExplanation}
                         diseaseInsight={diseaseInsight}
                         safetyStatus={safetyStatus}
@@ -453,5 +696,5 @@ const EventDetailsModal = React.forwardRef<HTMLDivElement, EventDetailsProps>(fu
     );
 });
 
-// Memoize the entire modal to prevent re-renders from parent if props haven't changed
 export default React.memo(EventDetailsModal);
+

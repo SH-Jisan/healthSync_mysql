@@ -83,7 +83,7 @@
 }
 
 .modalContent {
-    background: white;
+    background: var(--surface);
     padding: 2rem;
     border-radius: 16px;
     width: 90%;

@@ -18,7 +18,7 @@
 }
 
 .sectionHeader {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border);
     padding-bottom: 10px;
     margin-bottom: 1.5rem;
     color: var(--text-secondary);
@@ -47,8 +47,8 @@
     gap: 10px;
     padding: 10px 12px;
     border-radius: 8px;
-    border: 1px solid #ccc;
-    background: white;
+    border: 1px solid var(--border);
+    background: var(--surface-elevated);
     transition: border-color 0.2s;
 }
 
@@ -69,10 +69,12 @@
     width: 100%;
     padding: 10px;
     border-radius: 8px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     margin-top: 5px;
     font-family: inherit;
     resize: vertical;
+    background: var(--surface-elevated);
+    color: var(--text-primary);
 }
 
 .buttonGroup {
@@ -94,7 +96,7 @@
 }
 
 .cancelBtn:hover {
-    background: #f1f5f9;
+    background: var(--surface-elevated);
 }
 
 .saveBtn {

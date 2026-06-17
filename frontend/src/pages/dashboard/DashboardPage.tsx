@@ -19,7 +19,7 @@ export default function DashboardPage() {
                 const roleFromMeta = user.user_metadata?.role;
 
                 if (!roleFromMeta) {
-                    const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+                    const { data } = await supabase.from('User').select('role').eq('id', user.id).single();
                     setRole(data?.role || 'CITIZEN');
                 } else {
                     setRole(roleFromMeta);

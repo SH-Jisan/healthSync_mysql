@@ -25,7 +25,7 @@ export default function DonorRegistration() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        const { data: profile } = await supabase.from('User').select('*').eq('id', user.id).single();
         if (profile) {
             if (profile.blood_group) setBloodGroup(profile.blood_group);
             if (profile.district) setDistrict(profile.district);
@@ -47,7 +47,7 @@ export default function DonorRegistration() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
-            await supabase.from('profiles').update({
+            await supabase.from('User').update({
                 blood_group: bloodGroup,
                 district: district,
                 phone: phone
@@ -63,6 +63,31 @@ export default function DonorRegistration() {
         } catch (err) {
             console.error(err);
             alert(t('blood.register.fail'));
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleUnregister = async () => {
+        if (!confirm("Are you sure you want to unregister as a blood donor? You will no longer appear in search results for blood requests.")) return;
+        setSaving(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { error } = await supabase
+                .from('blood_donors')
+                .delete()
+                .eq('user_id', user.id);
+
+            if (error) throw error;
+
+            alert("Successfully unregistered as a blood donor.");
+            setIsAlreadyDonor(false);
+            setAvailable(false);
+        } catch (err: any) {
+            console.error(err);
+            alert("Failed to unregister: " + err.message);
         } finally {
             setSaving(false);
         }
@@ -146,16 +171,28 @@ export default function DonorRegistration() {
                         </label>
                     </div>
 
-                    <button type="submit" disabled={saving} className={`${styles.submitBtn} t-btn-primary`}>
-                        {saving ? (
-                            <Spinner size={20} className={styles.spinner} />
-                        ) : (
-                            <>
-                                <CheckCircle size={20} weight="bold" />
-                                {isAlreadyDonor ? t('blood.register.update_btn') : t('blood.register.register_btn')}
-                            </>
+                    <div className={styles.btnRow}>
+                        <button type="submit" disabled={saving} className={`${styles.submitBtn} t-btn-primary`}>
+                            {saving ? (
+                                <Spinner size={20} className={styles.spinner} />
+                            ) : (
+                                <>
+                                    <CheckCircle size={20} weight="bold" />
+                                    {isAlreadyDonor ? t('blood.register.update_btn') : t('blood.register.register_btn')}
+                                </>
+                            )}
+                        </button>
+                        {isAlreadyDonor && (
+                            <button
+                                type="button"
+                                onClick={handleUnregister}
+                                disabled={saving}
+                                className={styles.unregisterBtn}
+                            >
+                                Leave Community
+                            </button>
                         )}
-                    </button>
+                    </div>
                 </form>
             </motion.div>
         </div>

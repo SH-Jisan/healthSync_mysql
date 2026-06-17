@@ -284,6 +284,8 @@ export default function PatientPrescriptions() {
                 <EventDetailsModal
                     event={selectedItem}
                     onClose={() => setSelectedItem(null)}
+                    onUpdate={fetchRecords}
+                    onDelete={fetchRecords}
                 />
             )}
         </div>

@@ -27,7 +27,7 @@ export default function BookAppointmentModal({ doctor, onClose }: Props) {
 
             const appointmentDateTime = new Date(`${date}T${time}`).toISOString();
 
-            const { error } = await supabase.from('appointments').insert({
+            const { error } = await supabase.from('Appointment').insert({
                 doctor_id: doctor.id,
                 patient_id: user.id,
                 appointment_date: appointmentDateTime,

@@ -27,7 +27,7 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: white;
+    background: var(--surface);
     border: 2px solid white;
     display: flex;
     align-items: center;
@@ -40,7 +40,7 @@
 
 .card {
     flex: 1;
-    background: white;
+    background: var(--surface);
     padding: 1.5rem;
     border-radius: 16px;
     border: 1px solid rgba(0, 0, 0, 0.03);
@@ -172,7 +172,7 @@
 }
 
 .card:hover .findingChip {
-    background: white;
+    background: var(--surface);
     border-color: var(--primary);
     color: var(--primary);
 }

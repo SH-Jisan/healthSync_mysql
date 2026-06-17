@@ -33,5 +33,15 @@ export const bloodApi = {
             .eq('id', id);
 
         if (error) throw error;
+    },
+
+    updateRequest: async (id: string, updates: Partial<BloodRequest>) => {
+        const { error } = await supabase
+            .from('blood_requests')
+            .update(updates)
+            .eq('id', id);
+
+        if (error) throw error;
     }
 };
+

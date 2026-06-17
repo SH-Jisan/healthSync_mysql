@@ -11,7 +11,7 @@
     position: absolute;
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(0, 121, 107, 0.05) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(2, 132, 199, 0.05) 0%, transparent 70%);
     top: -100px;
     left: -200px;
     z-index: 0;
@@ -52,7 +52,7 @@
 }
 
 .card {
-    background: white;
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     padding: 40px;

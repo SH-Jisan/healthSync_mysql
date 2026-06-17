@@ -22,17 +22,18 @@ export default function DiagnosticSearch() {
     const [newPhone, setNewPhone] = useState('');
     const [newEmail, setNewEmail] = useState('');
 
-    const handleSearch = async (e?: React.FormEvent) => {
+    const handleSearch = async (e?: React.FormEvent, emailOverride?: string) => {
         e?.preventDefault();
-        if (!email) return;
+        const searchEmail = emailOverride !== undefined ? emailOverride : email;
+        if (!searchEmail) return;
         setLoading(true);
         setSearchedPatient(null);
 
         try {
             const { data, error } = await supabase
-                .from('profiles')
+                .from('User')
                 .select('*')
-                .eq('email', email.trim())
+                .eq('email', searchEmail.trim())
                 .eq('role', 'CITIZEN')
                 .maybeSingle();
 
@@ -42,7 +43,7 @@ export default function DiagnosticSearch() {
                 setSearchedPatient(data as PatientProfile);
             } else {
                 alert(t('dashboard.diagnostic.search.not_found_alert'));
-                setNewEmail(email);
+                setNewEmail(searchEmail);
                 setShowRegister(true);
             }
         } catch (err: unknown) {
@@ -99,7 +100,10 @@ export default function DiagnosticSearch() {
             alert(t('dashboard.diagnostic.search.success_reg'));
             setShowRegister(false);
             setEmail(newEmail);
-            await handleSearch();
+            setNewName('');
+            setNewEmail('');
+            setNewPhone('');
+            await handleSearch(undefined, newEmail);
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : t('dashboard.diagnostic.search.reg_fail');
             alert(t('common.error') + ': ' + message);

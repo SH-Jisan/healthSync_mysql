@@ -1,22 +1,24 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { House, User, Users, Drop } from 'phosphor-react';
+import { House, User, Users, Drop, Bed } from 'phosphor-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import HospitalOverview from '../../features/hospital/HospitalOverview';
 import HospitalDoctors from '../../features/hospital/HospitalDoctors';
 import HospitalPatients from '../../features/hospital/HospitalPatients';
 import HospitalBloodBank from "../../features/hospital/HospitalBloodBank";
+import HospitalBeds from '../../features/hospital/HospitalBeds';
 import styles from './styles/HospitalHome.module.css';
 
 export default function HospitalHome() {
     const { t } = useTranslation();
-    const [activeTab, setActiveTab] = useState<'overview' | 'doctors' | 'patients' | 'blood'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'doctors' | 'patients' | 'blood' | 'beds'>('overview');
 
     const tabs = [
         { id: 'overview', label: t('dashboard.hospital.tabs.overview'), Icon: House },
         { id: 'doctors', label: t('dashboard.hospital.tabs.doctors'), Icon: User },
         { id: 'patients', label: t('dashboard.hospital.tabs.patients'), Icon: Users },
         { id: 'blood', label: t('dashboard.hospital.tabs.blood'), Icon: Drop },
+        { id: 'beds', label: t('dashboard.hospital.tabs.beds'), Icon: Bed },
     ] as const;
 
     return (
@@ -65,6 +67,7 @@ export default function HospitalHome() {
                         {activeTab === 'doctors' && <HospitalDoctors />}
                         {activeTab === 'patients' && <HospitalPatients />}
                         {activeTab === 'blood' && <HospitalBloodBank />}
+                        {activeTab === 'beds' && <HospitalBeds />}
                     </motion.div>
                 </AnimatePresence>
             </div>

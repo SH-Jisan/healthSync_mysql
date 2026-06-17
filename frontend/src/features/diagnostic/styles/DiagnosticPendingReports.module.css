@@ -11,7 +11,7 @@
 .card {
     display: flex;
     align-items: center;
-    background-color: #ffffff;
+    background-color: var(--surface);
     border-radius: 12px;
     padding: 1rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
@@ -46,7 +46,7 @@
     margin: 0;
     font-size: 14px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .info p {
@@ -57,7 +57,7 @@
 .info small {
     margin-top: 2px;
     font-size: 11px;
-    color: #9ca3af;
+    color: var(--text-muted);
 }
 
 /* Responsive adjustments */
