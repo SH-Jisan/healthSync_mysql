@@ -33,6 +33,16 @@ interface Diagnostic {
 export default function PatientAppointments() {
     const { t } = useTranslation();
     const [searchParams, setSearchParams] = useSearchParams();
+
+    const getSpecialtyKey = (spec: string) => {
+        return spec ? spec.toLowerCase().replace(/ /g, '_') : '';
+    };
+
+    const getStatusTranslationKey = (status: string) => {
+        const s = status.toUpperCase();
+        if (s === 'ACCEPTED') return 'CONFIRMED';
+        return s;
+    };
     const initialTab = (searchParams.get('tab') as 'appointments' | 'diagnostic' | 'hospitals') || 'appointments';
     const [activeTab, setActiveTab] = useState(initialTab);
 
@@ -218,7 +228,9 @@ export default function PatientAppointments() {
 
                                                 <div className={styles.infoSection}>
                                                     <div className={styles.mainTitle}>{app.doctor.full_name}</div>
-                                                    <div className={styles.subTitle}>{t(`specialties.${app.doctor.specialty}`)}</div>
+                                                    <div className={styles.subTitle}>
+                                                        {app.doctor.specialty ? t(`doctor_list.specialties.${getSpecialtyKey(app.doctor.specialty)}`, app.doctor.specialty) : t('doctor_list.general_physician')}
+                                                    </div>
 
                                                     <div className={styles.metaInfo}>
                                                         {app.hospital && (
@@ -235,7 +247,7 @@ export default function PatientAppointments() {
                                                 </div>
 
                                                 <span className={`${styles.statusBadge} ${className}`}>
-                                                    {t(`appointments.status.${app.status.toLowerCase()}`)}
+                                                    {t(`status.${getStatusTranslationKey(app.status)}`, app.status)}
                                                 </span>
                                             </div>
 

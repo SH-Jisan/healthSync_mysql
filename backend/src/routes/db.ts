@@ -9,7 +9,336 @@ const router = Router();
 router.post('/query', authenticateJWT, async (req: Request, res: Response) => {
   const { table, action, selectFields, filters, orderFields, limitCount, isSingle, data } = req.body;
 
+  const user = (req as any).user;
+  const userId = user?.id;
+  const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '127.0.0.1';
+  const deviceInfo = req.headers['user-agent'] || 'Unknown';
+
+  let previousValueStr: string | null = null;
+
   try {
+    // 1. Fetch previous value if mutating to store in audit logs
+    if (['update', 'delete', 'upsert'].includes(action)) {
+      try {
+        const { whereSql, whereParams } = buildWhereClause(filters || []);
+        if (whereSql && whereSql !== '1=1') {
+          const [existingRows]: any = await pool.query(`SELECT * FROM ${escapeId(table)} WHERE ${whereSql}`, whereParams);
+          if (existingRows && existingRows.length > 0) {
+            previousValueStr = JSON.stringify(existingRows);
+          }
+        }
+      } catch (err: any) {
+        console.error('Audit pre-fetch error:', err.message);
+      }
+    }
+
+    // 2. Intercept and Validate Workflows/Rules
+    if (action === 'insert' || action === 'update' || action === 'upsert') {
+      const rowData = data || {};
+
+      // A. Prevent Duplicate Citizen Profile Registration
+      if (table === 'User') {
+        const checkFields = ['national_id', 'birth_reg_number', 'passport_number'];
+        for (const field of checkFields) {
+          if (rowData[field]) {
+            const checkId = rowData.id || (filters && filters.find((f: any) => f.field === 'id')?.value);
+            let queryStr = `SELECT id FROM \`User\` WHERE \`${field}\` = ?`;
+            let queryParams: any[] = [rowData[field]];
+            if (checkId) {
+              queryStr += ' AND id != ?';
+              queryParams.push(checkId);
+            }
+            const [dups]: any = await pool.query(queryStr, queryParams);
+            if (dups.length > 0) {
+              return res.status(400).json({ error: `Validation error: A user with this ${field.replace(/_/g, ' ').toUpperCase()} already exists.` });
+            }
+          }
+        }
+      }
+
+      // B. Appointment Leave & Double-Booking Conflicts
+      if ((table === 'appointments' || table === 'Appointment') && action === 'insert') {
+        if (rowData.appointment_date && rowData.doctor_id) {
+          const apptDate = new Date(rowData.appointment_date);
+
+          // 1. Leave Check
+          const [leaves]: any = await pool.query(
+            `SELECT * FROM doctor_leaves WHERE doctor_id = ? AND status = 'APPROVED' AND ? BETWEEN start_date AND end_date`,
+            [rowData.doctor_id, apptDate]
+          );
+          if (leaves && leaves.length > 0) {
+            return res.status(400).json({ error: 'Validation error: The doctor is on approved leave on this date.' });
+          }
+
+          // 2. Double-Booking Conflict Check (within 60 minutes)
+          const [slots]: any = await pool.query(
+            `SELECT * FROM Appointment WHERE doctor_id = ? AND status IN ('PENDING', 'CONFIRMED') AND ABS(TIMESTAMPDIFF(MINUTE, appointment_date, ?)) < 60`,
+            [rowData.doctor_id, rowData.appointment_date]
+          );
+          if (slots && slots.length > 0) {
+            return res.status(400).json({ error: 'Conflict: Doctor already has an active appointment within this time slot.' });
+          }
+        }
+      }
+
+      // C. Bed Assignment Rules & Admitted Check
+      if (table === 'hospital_beds' && action === 'update') {
+        if (rowData.status === 'OCCUPIED' && rowData.patient_id) {
+          // Check if patient is admitted
+          const hospitalId = rowData.hospital_id || userId;
+          const [admissions]: any = await pool.query(
+            `SELECT * FROM patient_admissions WHERE patient_id = ? AND hospital_id = ? AND status = 'ADMITTED'`,
+            [rowData.patient_id, hospitalId]
+          );
+          if (admissions.length === 0) {
+            return res.status(400).json({ error: 'Validation error: Patient must be actively admitted to this hospital before bed assignment.' });
+          }
+
+          // Check if bed is AVAILABLE
+          const bedId = filters && filters.find((f: any) => f.field === 'id')?.value;
+          if (bedId) {
+            const [currentBeds]: any = await pool.query(`SELECT status, bed_number FROM hospital_beds WHERE id = ?`, [bedId]);
+            if (currentBeds.length > 0) {
+              const currentBed = currentBeds[0];
+              if (currentBed.status !== 'AVAILABLE') {
+                return res.status(400).json({ error: 'Selected bed is currently unavailable (occupied, cleaning, or maintenance).' });
+              }
+
+              // Handle bed transfer automatically
+              const [otherBeds]: any = await pool.query(
+                `SELECT id, bed_number FROM hospital_beds WHERE hospital_id = ? AND patient_id = ? AND id != ?`,
+                [hospitalId, rowData.patient_id, bedId]
+              );
+              if (otherBeds.length > 0) {
+                const oldBed = otherBeds[0];
+                // Release old bed and mark as CLEANING
+                await pool.query(
+                  `UPDATE hospital_beds SET status = 'CLEANING', patient_id = NULL, assigned_doctor_id = NULL WHERE id = ?`,
+                  [oldBed.id]
+                );
+                // Log transfer
+                await pool.query(
+                  `INSERT INTO bed_transfer_logs (hospital_id, patient_id, previous_bed_number, new_bed_number, action_by) VALUES (?, ?, ?, ?, ?)`,
+                  [hospitalId, rowData.patient_id, oldBed.bed_number, currentBed.bed_number, userId]
+                );
+              }
+            }
+          }
+        }
+      }
+
+      // D. Diagnostic State Transitions Enforcement
+      if (table === 'diagnostic_orders' && action === 'update' && rowData.status) {
+        const orderId = filters && filters.find((f: any) => f.field === 'id')?.value;
+        if (orderId) {
+          const [orders]: any = await pool.query(`SELECT status FROM diagnostic_orders WHERE id = ?`, [orderId]);
+          if (orders.length > 0) {
+            const currentStatus = orders[0].status;
+            const validTransitions: Record<string, string[]> = {
+              BOOKED: ['SAMPLE_COLLECTED'],
+              SAMPLE_COLLECTED: ['PROCESSING'],
+              PROCESSING: ['QUALITY_CHECK'],
+              QUALITY_CHECK: ['DOCTOR_REVIEW'],
+              DOCTOR_REVIEW: ['APPROVED', 'REJECTED'],
+              APPROVED: [],
+              REJECTED: ['BOOKED', 'SAMPLE_COLLECTED']
+            };
+            const allowed = validTransitions[currentStatus] || [];
+            if (currentStatus !== rowData.status && !allowed.includes(rowData.status)) {
+              return res.status(400).json({ error: `Validation error: Invalid diagnostic status transition from ${currentStatus} to ${rowData.status}.` });
+            }
+          }
+        }
+      }
+
+      // E. Doctor Leaves Date Boundary Check
+      if (table === 'doctor_leaves' && action === 'insert') {
+        const startDate = new Date(rowData.start_date);
+        const endDate = new Date(rowData.end_date);
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        if (startDate < today) {
+          return res.status(400).json({ error: 'Leave start date cannot be in the past.' });
+        }
+        if (endDate < startDate) {
+          return res.status(400).json({ error: 'Leave end date cannot be before the start date.' });
+        }
+      }
+    }
+
+    // Helper function to write audits & trigger workflow notifications/logs after success
+    const afterQuerySuccess = async (mutatedAction: string, mutatedTable: string, mutatedData: any, queryFilters: any, prevVal: string | null) => {
+      try {
+        let recordId = queryFilters?.find((f: any) => f.field === 'id')?.value || (mutatedData && (mutatedData.id || mutatedData.user_id));
+
+        // Fetch new value for auditing
+        let newValueStr: string | null = null;
+        if (['insert', 'update', 'upsert'].includes(mutatedAction)) {
+          if (recordId) {
+            const lookupField = (mutatedTable === 'blood_donors' || mutatedTable === 'ai_health_plans') ? 'user_id' : 'id';
+            const [newRows]: any = await pool.query(`SELECT * FROM ${escapeId(mutatedTable)} WHERE ${escapeId(lookupField)} = ?`, [recordId]);
+            if (newRows && newRows.length > 0) {
+              newValueStr = JSON.stringify(newRows);
+            }
+          } else if (mutatedData) {
+            newValueStr = JSON.stringify(mutatedData);
+          }
+        }
+
+        // 1. Insert into audit_logs table
+        await pool.query(
+          `INSERT INTO audit_logs (user_id, action, table_name, record_id, ip_address, device_info, previous_value, new_value) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [userId, mutatedAction.toUpperCase(), mutatedTable, recordId ? String(recordId) : null, ipAddress, deviceInfo, prevVal, newValueStr]
+        );
+
+        // 2. Automated Notifications & Workflows Logic
+        // A. Appointments
+        if (mutatedTable === 'appointments' || mutatedTable === 'Appointment') {
+          if (mutatedAction === 'insert') {
+            await pool.query(
+              `INSERT INTO notifications (id, user_id, title, content) VALUES (?, ?, ?, ?), (?, ?, ?, ?)`,
+              [
+                crypto.randomUUID(), mutatedData.patient_id, 'Appointment Booked', `Your appointment with doctor has been booked for ${new Date(mutatedData.appointment_date).toLocaleDateString()}.`,
+                crypto.randomUUID(), mutatedData.doctor_id, 'New Appointment Scheduled', `You have a new patient appointment on ${new Date(mutatedData.appointment_date).toLocaleDateString()}.`
+              ]
+            );
+          } else if (mutatedAction === 'update' && mutatedData.status) {
+            const parsedPrev = prevVal ? JSON.parse(prevVal)[0] : null;
+            if (parsedPrev) {
+              await pool.query(
+                `INSERT INTO notifications (id, user_id, title, content) VALUES (?, ?, ?, ?), (?, ?, ?, ?)`,
+                [
+                  crypto.randomUUID(), parsedPrev.patient_id, 'Appointment Status Updated', `Your appointment status has been updated to: ${mutatedData.status}.`,
+                  crypto.randomUUID(), parsedPrev.doctor_id, 'Appointment Status Updated', `Appointment status for patient changed to: ${mutatedData.status}.`
+                ]
+              );
+            }
+          }
+        }
+
+        // B. Patient Admissions
+        if (mutatedTable === 'patient_admissions') {
+          if (mutatedAction === 'insert') {
+            await pool.query(
+              `INSERT INTO notifications (id, user_id, title, content) VALUES (?, ?, ?, ?)`,
+              [crypto.randomUUID(), mutatedData.patient_id, 'Admission Request Submitted', `Your hospital admission request has been received.`]
+            );
+          } else if (mutatedAction === 'update' && mutatedData.status) {
+            const parsedPrev = prevVal ? JSON.parse(prevVal)[0] : null;
+            if (parsedPrev) {
+              const msg = mutatedData.status === 'ADMITTED' 
+                ? 'You have been admitted successfully to the department.' 
+                : `Your admission status updated to: ${mutatedData.status}.`;
+              await pool.query(
+                `INSERT INTO notifications (id, user_id, title, content) VALUES (?, ?, ?, ?)`,
+                [crypto.randomUUID(), parsedPrev.patient_id, 'Admission Status Updated', msg]
+              );
+            }
+          }
+        }
+
+        // C. Bed Assignment
+        if (mutatedTable === 'hospital_beds' && mutatedAction === 'update' && mutatedData.patient_id && mutatedData.status === 'OCCUPIED') {
+          await pool.query(
+            `INSERT INTO notifications (id, user_id, title, content) VALUES (?, ?, ?, ?)`,
+            [crypto.randomUUID(), mutatedData.patient_id, 'Bed Assigned', `You have been allocated Bed ${mutatedData.bed_number}.`]
+          );
+        }
+
+        // D. Diagnostic Orders
+        if (mutatedTable === 'diagnostic_orders' && mutatedAction === 'update' && mutatedData.status) {
+          const parsedPrev = prevVal ? JSON.parse(prevVal)[0] : null;
+          if (parsedPrev) {
+            await pool.query(
+              `INSERT INTO notifications (id, user_id, title, content) VALUES (?, ?, ?, ?)`,
+              [crypto.randomUUID(), parsedPrev.patient_id, 'Diagnostic Test Status Updated', `Your diagnostic test order status is now: ${mutatedData.status}.`]
+            );
+
+            // Auto-complete parent payment status if all orders are APPROVED
+            if (mutatedData.status === 'APPROVED') {
+              const [pending]: any = await pool.query(
+                `SELECT COUNT(*) AS count FROM diagnostic_orders WHERE payment_id = ? AND status != 'APPROVED'`,
+                [parsedPrev.payment_id]
+              );
+              if (pending[0].count === 0) {
+                await pool.query(
+                  `UPDATE patient_payments SET report_status = 'COMPLETED' WHERE id = ?`,
+                  [parsedPrev.payment_id]
+                );
+              }
+            }
+          }
+        }
+
+        // D2. Patient Payments Test Conversion
+        if (mutatedTable === 'patient_payments' && mutatedAction === 'insert') {
+          try {
+            const testNames = mutatedData.test_names || [];
+            for (const testName of testNames) {
+              const [testRows]: any = await pool.query(`SELECT id FROM MedicalTest WHERE name = ?`, [testName]);
+              const testId = testRows.length > 0 ? testRows[0].id : 'test-1';
+              await pool.query(
+                `INSERT INTO diagnostic_orders (id, payment_id, patient_id, diagnostic_id, test_id, status) VALUES (?, ?, ?, ?, ?, ?)`,
+                [crypto.randomUUID(), mutatedData.id, mutatedData.patient_id, mutatedData.provider_id, testId, 'BOOKED']
+              );
+            }
+          } catch (err: any) {
+            console.error('Error generating diagnostic orders from payment:', err.message);
+          }
+        }
+
+        // E. Leaves Approved
+        if (mutatedTable === 'doctor_leaves' && mutatedAction === 'update' && mutatedData.status === 'APPROVED') {
+          const parsedPrev = prevVal ? JSON.parse(prevVal)[0] : null;
+          if (parsedPrev) {
+            await pool.query(
+              `INSERT INTO notifications (id, user_id, title, content) VALUES (?, ?, ?, ?)`,
+              [crypto.randomUUID(), parsedPrev.doctor_id, 'Leave Approved', `Your leave requests from ${parsedPrev.start_date} to ${parsedPrev.end_date} has been approved.`]
+            );
+          }
+        }
+
+        // F. Doctor Affiliation Invitations & History
+        if (mutatedTable === 'hospital_doctor_invitations') {
+          const parsedPrev = prevVal ? JSON.parse(prevVal)[0] : null;
+          if (parsedPrev) {
+            if (mutatedData.status === 'APPROVED') {
+              await pool.query(
+                `INSERT IGNORE INTO HospitalDoctor (hospital_id, doctor_id) VALUES (?, ?)`,
+                [parsedPrev.hospital_id, parsedPrev.doctor_id]
+              );
+              await pool.query(
+                `INSERT INTO doctor_employment_history (doctor_id, hospital_id, department_name, employment_type, action, notes) VALUES (?, ?, ?, ?, ?, ?)`,
+                [parsedPrev.doctor_id, parsedPrev.hospital_id, parsedPrev.department_name, parsedPrev.employment_type, 'APPROVED', 'Joined department roster.']
+              );
+              await pool.query(
+                `INSERT INTO notifications (id, user_id, title, content) VALUES (?, ?, ?, ?), (?, ?, ?, ?)`,
+                [
+                  crypto.randomUUID(), parsedPrev.doctor_id, 'Affiliation Invitation Approved', `You are now linked as a doctor at hospital.`,
+                  crypto.randomUUID(), parsedPrev.hospital_id, 'Doctor Joined Roster', `Doctor has joined your department staff.`
+                ]
+              );
+            } else if (mutatedData.status === 'SUSPENDED' || mutatedData.status === 'TERMINATED') {
+              await pool.query(
+                `DELETE FROM HospitalDoctor WHERE hospital_id = ? AND doctor_id = ?`,
+                [parsedPrev.hospital_id, parsedPrev.doctor_id]
+              );
+              await pool.query(
+                `INSERT INTO doctor_employment_history (doctor_id, hospital_id, department_name, employment_type, action, notes) VALUES (?, ?, ?, ?, ?, ?)`,
+                [parsedPrev.doctor_id, parsedPrev.hospital_id, parsedPrev.department_name, parsedPrev.employment_type, mutatedData.status, `Roster status changed to ${mutatedData.status}.`]
+              );
+              await pool.query(
+                `INSERT INTO notifications (id, user_id, title, content) VALUES (?, ?, ?, ?)`,
+                [crypto.randomUUID(), parsedPrev.doctor_id, 'Hospital Affiliation Update', `Your medical staff roster status changed to: ${mutatedData.status}.`]
+              );
+            }
+          }
+        }
+      } catch (err: any) {
+        console.error('Workflow engine post-query execution failed:', err.message);
+      }
+    };
+
     if (action === 'select') {
       let baseSql = '';
 
@@ -34,6 +363,8 @@ router.post('/query', authenticateJWT, async (req: Request, res: Response) => {
         baseSql = `SELECT hospital_patients.*, p_prof.full_name AS profiles_full_name, p_prof.email AS profiles_email, p_prof.phone AS profiles_phone FROM hospital_patients LEFT JOIN \`User\` AS p_prof ON hospital_patients.patient_id = p_prof.id`;
       } else if ((table === 'hospital_doctors' || table === 'HospitalDoctor') && (selectFields.includes('profiles') || selectFields.includes('User'))) {
         baseSql = `SELECT ${escapeId(table)}.*, doc_prof.full_name AS profiles_full_name, doc_prof.specialty AS profiles_specialty FROM ${escapeId(table)} LEFT JOIN \`User\` AS doc_prof ON ${escapeId(table)}.doctor_id = doc_prof.id`;
+      } else if (table === 'diagnostic_orders' && (selectFields.includes('test') || selectFields.includes('MedicalTest'))) {
+        baseSql = `SELECT diagnostic_orders.*, mt.name AS test_name, mt.category AS test_category, mt.base_price AS test_base_price FROM diagnostic_orders LEFT JOIN MedicalTest AS mt ON diagnostic_orders.test_id = mt.id`;
       } else {
         baseSql = `SELECT * FROM ${escapeId(table)}`;
       }
@@ -238,6 +569,18 @@ router.post('/query', authenticateJWT, async (req: Request, res: Response) => {
           }
         }
 
+        // Nested diagnostic_orders test
+        if (row.test_name !== undefined && table === 'diagnostic_orders') {
+          newRow.test = {
+            name: row.test_name,
+            category: row.test_category,
+            base_price: row.test_base_price
+          };
+          delete newRow.test_name;
+          delete newRow.test_category;
+          delete newRow.test_base_price;
+        }
+
         return newRow;
       });
 
@@ -252,7 +595,7 @@ router.post('/query', authenticateJWT, async (req: Request, res: Response) => {
       const insertedRows = [];
 
       for (const row of rowsToInsert) {
-        if (!row.id && (table === 'blood_requests' || table === 'medical_events' || table === 'patient_payments' || table === 'appointments' || table === 'Appointment' || table === 'notifications' || table === 'available_tests' || table === 'MedicalTest')) {
+        if (!row.id && (table === 'blood_requests' || table === 'medical_events' || table === 'patient_payments' || table === 'appointments' || table === 'Appointment' || table === 'notifications' || table === 'available_tests' || table === 'MedicalTest' || table === 'hospital_doctor_invitations' || table === 'doctor_leaves' || table === 'patient_admissions' || table === 'diagnostic_orders' || table === 'patient_referrals')) {
           row.id = crypto.randomUUID();
         }
 
@@ -293,6 +636,7 @@ router.post('/query', authenticateJWT, async (req: Request, res: Response) => {
         insertedRows.push(newlyInserted);
       }
 
+      await afterQuerySuccess('insert', table, Array.isArray(data) ? insertedRows : insertedRows[0], filters, previousValueStr);
       res.status(200).json({ data: Array.isArray(data) ? insertedRows : insertedRows[0] });
 
     } else if (action === 'update') {
@@ -306,6 +650,7 @@ router.post('/query', authenticateJWT, async (req: Request, res: Response) => {
       const params = [...values, ...whereParams];
 
       await pool.query(sql, params);
+      await afterQuerySuccess('update', table, data, filters, previousValueStr);
       res.status(200).json({ data: null });
 
     } else if (action === 'delete') {
@@ -313,6 +658,7 @@ router.post('/query', authenticateJWT, async (req: Request, res: Response) => {
       const sql = `DELETE FROM ${escapeId(table)} WHERE ${whereSql}`;
 
       await pool.query(sql, whereParams);
+      await afterQuerySuccess('delete', table, null, filters, previousValueStr);
       res.status(200).json({ data: null });
       
     } else if (action === 'upsert') {
@@ -320,7 +666,7 @@ router.post('/query', authenticateJWT, async (req: Request, res: Response) => {
       const insertedRows = [];
 
       for (const row of rowsToInsert) {
-        if (!row.id && !row.user_id && (table === 'blood_requests' || table === 'medical_events' || table === 'patient_payments' || table === 'appointments' || table === 'Appointment' || table === 'notifications' || table === 'available_tests' || table === 'MedicalTest')) {
+        if (!row.id && !row.user_id && (table === 'blood_requests' || table === 'medical_events' || table === 'patient_payments' || table === 'appointments' || table === 'Appointment' || table === 'notifications' || table === 'available_tests' || table === 'MedicalTest' || table === 'hospital_doctor_invitations' || table === 'doctor_leaves' || table === 'patient_admissions' || table === 'diagnostic_orders' || table === 'patient_referrals')) {
           row.id = crypto.randomUUID();
         }
 
@@ -365,6 +711,7 @@ router.post('/query', authenticateJWT, async (req: Request, res: Response) => {
         insertedRows.push(newlyInserted);
       }
 
+      await afterQuerySuccess('upsert', table, Array.isArray(data) ? insertedRows : insertedRows[0], filters, previousValueStr);
       res.status(200).json({ data: Array.isArray(data) ? insertedRows : insertedRows[0] });
     }
   } catch (error: any) {

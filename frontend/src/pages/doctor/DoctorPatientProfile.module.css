@@ -280,3 +280,27 @@
     padding: 10px 14px;
     border-radius: 10px;
 }
+
+.btnTest {
+    background: #EEF2FF;
+    color: #4338ca;
+    border-color: #C7D2FE;
+}
+
+:global(body.dark-theme) .btnTest {
+    background: var(--highlight-light);
+    color: var(--highlight);
+    border-color: rgba(129, 140, 248, 0.25);
+}
+
+.btnRx {
+    background: #ECFDF5;
+    color: #047857;
+    border-color: #6EE7B7;
+}
+
+:global(body.dark-theme) .btnRx {
+    background: var(--success-light);
+    color: var(--success);
+    border-color: rgba(52, 211, 153, 0.25);
+}

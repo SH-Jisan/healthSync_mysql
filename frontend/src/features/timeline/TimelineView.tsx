@@ -1,5 +1,3 @@
-// File: HealthSync/web/src/features/timeline/TimelineView.tsx
-
 import { useEffect, useState, useCallback } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -28,15 +26,13 @@ export default function TimelineView({ userId }: { userId?: string }) {
             return;
         }
 
-        // [UPDATED] Filter to show ONLY REPORTS (and Vaccinations/Surgeries if any)
-        // Excluding 'PRESCRIPTION' and 'TEST_ORDER' as requested
+        // Fetch ALL events (admissions, imaging, prescriptions, reports, vaccinations, surgeries, etc.)
         const { data, error } = await supabase
             .from('medical_events')
             .select(
                 '*, uploader:uploader_id(full_name, specialty), profiles:patient_id(full_name, phone)'
             )
             .eq('patient_id', targetId)
-            .in('event_type', ['REPORT', 'VACCINATION', 'SURGERY', 'GENERIC']) // Whitelist types
             .order('event_date', { ascending: false });
 
         if (error) {
@@ -54,33 +50,27 @@ export default function TimelineView({ userId }: { userId?: string }) {
         fetchTimeline();
     }, [fetchTimeline]);
 
-    if (loading) {
-        return <div className={styles.loading}>{t('timeline.loading', 'Loading history...')}</div>;
-    }
-
-    if (events.length === 0) {
-        return (
-            <div className={styles.noRecords}>
-                <h3>{t('timeline.no_records', 'No medical reports found')}</h3>
-                <p>
-                    {t('timeline.report_instruction', 'Timeline will update when diagnostic centers upload reports.')}
-                </p>
-            </div>
-        );
-    }
-
     return (
         <div className={styles.container}>
-            <div className={styles.timeline}>
-                {events.map((event, index) => (
-                    <div key={event.id} onClick={() => setSelectedEvent(event)}>
-                        <TimelineTile
-                            event={event}
-                            isLast={index === events.length - 1}
-                        />
-                    </div>
-                ))}
-            </div>
+            {loading ? (
+                <div className={styles.loading}>{t('timeline.loading', 'Loading health timeline...')}</div>
+            ) : events.length === 0 ? (
+                <div className={styles.noRecords}>
+                    <h3>No medical records found</h3>
+                    <p>Timeline will populate as health events and diagnostics are registered.</p>
+                </div>
+            ) : (
+                <div className={styles.timeline}>
+                    {events.map((event, index) => (
+                        <div key={event.id} onClick={() => setSelectedEvent(event)}>
+                            <TimelineTile
+                                event={event}
+                                isLast={index === events.length - 1}
+                            />
+                        </div>
+                    ))}
+                </div>
+            )}
 
             <AnimatePresence>
                 {selectedEvent && (

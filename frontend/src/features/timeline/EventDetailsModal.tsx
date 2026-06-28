@@ -34,9 +34,9 @@ const safeFormat = (dateString: string | undefined, dateFormat: string) => {
 };
 
 // Extracted VitalCard to prevent re-creation
-const VitalCard = React.memo(({ icon, label, value, unit, color, bg }: any) => (
+const VitalCard = React.memo(({ icon, label, value, unit, type }: any) => (
     <div className={styles.vitalCard}>
-        <div className={styles.vitalIcon} style={{ background: bg, color: color }}>
+        <div className={`${styles.vitalIcon} ${styles[type]}`}>
             {icon}
         </div>
         <div className={styles.vitalValue}>
@@ -77,6 +77,7 @@ const EventDetailsModal = React.forwardRef<HTMLDivElement, EventDetailsProps>(fu
     const [activeTab, setActiveTab] = useState<'overview' | 'medicines' | 'analysis' | 'file' | 'prescription'>(
         currentEvent.event_type === 'PRESCRIPTION' ? 'prescription' : 'overview'
     );
+    const [subTab, setSubTab] = useState<'quick' | 'patient' | 'doctor' | 'insights' | 'compare'>('quick');
     const [isPrinting, setIsPrinting] = useState(false);
 
     // Editing States
@@ -537,10 +538,10 @@ const EventDetailsModal = React.forwardRef<HTMLDivElement, EventDetailsProps>(fu
                                     <div className={styles.innerContent}>
                                         {(currentEvent.vitals?.bp || currentEvent.vitals?.hr || currentEvent.vitals?.temp || currentEvent.vitals?.weight) && (
                                             <div className={styles.vitalsGrid}>
-                                                <VitalCard icon={<Drop size={24} weight="fill" />} label="Blood Pressure" value={currentEvent.vitals?.bp || 'N/A'} unit={currentEvent.vitals?.bp ? 'mmHg' : ''} color="#EF4444" bg="#FEE2E2" />
-                                                <VitalCard icon={<Heartbeat size={24} weight="fill" />} label="Heart Rate" value={currentEvent.vitals?.hr || 'N/A'} unit={currentEvent.vitals?.hr ? 'bpm' : ''} color="#EC4899" bg="#FCE7F3" />
-                                                <VitalCard icon={<Thermometer size={24} weight="fill" />} label="Temperature" value={currentEvent.vitals?.temp || 'N/A'} unit={currentEvent.vitals?.temp ? '°F' : ''} color="#F59E0B" bg="#FEF3C7" />
-                                                <VitalCard icon={<Eye size={24} weight="fill" />} label="Weight" value={currentEvent.vitals?.weight || 'N/A'} unit={currentEvent.vitals?.weight ? 'kg' : ''} color="#10B981" bg="#D1FAE5" />
+                                                <VitalCard icon={<Drop size={24} weight="fill" />} label="Blood Pressure" value={currentEvent.vitals?.bp || 'N/A'} unit={currentEvent.vitals?.bp ? 'mmHg' : ''} type="bp" />
+                                                <VitalCard icon={<Heartbeat size={24} weight="fill" />} label="Heart Rate" value={currentEvent.vitals?.hr || 'N/A'} unit={currentEvent.vitals?.hr ? 'bpm' : ''} type="hr" />
+                                                <VitalCard icon={<Thermometer size={24} weight="fill" />} label="Temperature" value={currentEvent.vitals?.temp || 'N/A'} unit={currentEvent.vitals?.temp ? '°F' : ''} type="temp" />
+                                                <VitalCard icon={<Eye size={24} weight="fill" />} label="Weight" value={currentEvent.vitals?.weight || 'N/A'} unit={currentEvent.vitals?.weight ? 'kg' : ''} type="weight" />
                                             </div>
                                         )}
 
@@ -588,38 +589,120 @@ const EventDetailsModal = React.forwardRef<HTMLDivElement, EventDetailsProps>(fu
                                     <div className={styles.innerContent}>
                                         {aiData ? (
                                             <>
-                                                <div className={styles.simpleCard} style={{ background: '#F0F9FF', borderColor: '#BAE6FD' }}>
-                                                    <div className={styles.simpleCardHeader}>
-                                                        <CheckCircle size={24} color="#0284C7" weight="fill" />
-                                                        <h3 className={styles.simpleCardTitle} style={{ color: '#0369A1' }}>
-                                                            {isBangla ? 'এক নজরে' : 'Overview'}
-                                                        </h3>
-                                                    </div>
-                                                    <p style={{ margin: 0, color: '#075985' }}>{simpleExplanation}</p>
-                                                </div>
-
-                                                {diseaseInsight && (
-                                                    <div className={styles.diseaseCard}>
-                                                        <div className={styles.diseaseCardHeader}>
-                                                            <FirstAid size={24} color="#4338ca" weight="fill" />
-                                                            <h3 className={styles.diseaseCardTitle}>
-                                                                {isBangla ? 'সম্ভাব্য রোগ ও অবস্থা' : 'Condition Insight'}
-                                                            </h3>
-                                                        </div>
-                                                        <DiseaseInsight insight={diseaseInsight} />
+                                                {/* 1. Alerts Banner */}
+                                                {aiData.alerts && aiData.alerts.length > 0 && (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                                                        {aiData.alerts.map((alert: any, idx: number) => (
+                                                            <div 
+                                                                key={idx} 
+                                                                style={{ 
+                                                                    borderLeft: alert.type === 'CRITICAL' ? '4px solid var(--error)' : alert.type === 'FOLLOW_UP' ? '4px solid var(--warning)' : '4px solid var(--info)',
+                                                                    padding: '12px',
+                                                                    background: alert.type === 'CRITICAL' ? 'var(--error-light)' : alert.type === 'FOLLOW_UP' ? 'var(--warning-light)' : 'var(--info-light)',
+                                                                    display: 'flex',
+                                                                    alignItems: 'flex-start',
+                                                                    gap: '8px',
+                                                                    borderRadius: '8px'
+                                                                }}
+                                                            >
+                                                                <WarningCircle size={20} style={{ color: alert.type === 'CRITICAL' ? 'var(--error)' : alert.type === 'FOLLOW_UP' ? 'var(--warning)' : 'var(--info)', marginTop: '2px' }} />
+                                                                <div>
+                                                                    <strong style={{ display: 'block', fontSize: '13px', color: 'var(--text-primary)' }}>{alert.title}</strong>
+                                                                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{alert.message}</span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 )}
 
+                                                {/* 2. Sub-tabs navigation */}
+                                                <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border)', paddingBottom: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                                                    <button
+                                                        onClick={() => setSubTab('quick')}
+                                                        style={{ fontSize: '12px', padding: '6px 14px', borderRadius: '20px', border: subTab === 'quick' ? '1px solid var(--primary)' : '1px solid var(--border)', background: subTab === 'quick' ? 'var(--primary)' : 'var(--surface-elevated)', color: subTab === 'quick' ? 'var(--text-inverse)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
+                                                    >
+                                                        {isBangla ? 'সংক্ষিপ্ত সারসংক্ষেপ' : 'Quick Summary'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setSubTab('patient')}
+                                                        style={{ fontSize: '12px', padding: '6px 14px', borderRadius: '20px', border: subTab === 'patient' ? '1px solid var(--primary)' : '1px solid var(--border)', background: subTab === 'patient' ? 'var(--primary)' : 'var(--surface-elevated)', color: subTab === 'patient' ? 'var(--text-inverse)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
+                                                    >
+                                                        {isBangla ? 'সহজ ব্যাখ্যা (রোগী)' : 'Patient Explanation'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setSubTab('insights')}
+                                                        style={{ fontSize: '12px', padding: '6px 14px', borderRadius: '20px', border: subTab === 'insights' ? '1px solid var(--primary)' : '1px solid var(--border)', background: subTab === 'insights' ? 'var(--primary)' : 'var(--surface-elevated)', color: subTab === 'insights' ? 'var(--text-inverse)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
+                                                    >
+                                                        {isBangla ? 'মেডিকেল ইনসাইট' : 'Medical Insights'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setSubTab('doctor')}
+                                                        style={{ fontSize: '12px', padding: '6px 14px', borderRadius: '20px', border: subTab === 'doctor' ? '1px solid var(--primary)' : '1px solid var(--border)', background: subTab === 'doctor' ? 'var(--primary)' : 'var(--surface-elevated)', color: subTab === 'doctor' ? 'var(--text-inverse)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
+                                                    >
+                                                        {isBangla ? 'ডাক্তার সামারি' : 'Doctor Summary'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setSubTab('compare')}
+                                                        style={{ fontSize: '12px', padding: '6px 14px', borderRadius: '20px', border: subTab === 'compare' ? '1px solid var(--primary)' : '1px solid var(--border)', background: subTab === 'compare' ? 'var(--primary)' : 'var(--surface-elevated)', color: subTab === 'compare' ? 'var(--text-inverse)' : 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600 }}
+                                                    >
+                                                        {isBangla ? 'পূর্ববর্তী তুলনা' : 'Historical Comparison'}
+                                                    </button>
+                                                </div>
+
+                                                {/* 3. Sub-tab Content Rendering */}
                                                 <div className={styles.detailedSection}>
-                                                    <div className={styles.detailHeader}>
-                                                        <FileText size={24} color="var(--primary)" />
-                                                        <h3 className={styles.detailTitle}>
-                                                            {isBangla ? 'বিস্তারিত রিপোর্ট বিশ্লেষণ' : 'Detailed Report Analysis'}
-                                                        </h3>
-                                                    </div>
-                                                    <div className={styles.markdownContent}>
-                                                        {memoizedMarkdown}
-                                                    </div>
+                                                    {subTab === 'quick' && (
+                                                        <div>
+                                                            <h4 style={{ margin: '0 0 8px', color: 'var(--text-primary)' }}>{isBangla ? 'এক নজরে সারসংক্ষেপ' : 'Quick Summary at a Glance'}</h4>
+                                                            <p style={{ fontSize: '14px', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                                                                {isBangla ? (aiData.quick_summary_bn || simpleExplanation) : (aiData.quick_summary_en || simpleExplanation)}
+                                                            </p>
+                                                        </div>
+                                                    )}
+
+                                                    {subTab === 'patient' && (
+                                                        <div>
+                                                            <h4 style={{ margin: '0 0 8px', color: 'var(--text-primary)' }}>{isBangla ? 'সহজ ভাষায় ব্যাখ্যা' : 'Patient-Friendly Explanation'}</h4>
+                                                            <div className={styles.markdownContent} style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                                                                <ReactMarkdown>
+                                                                    {isBangla ? (aiData.patient_explanation_bn || 'পেশেন্ট-ফ্রেন্ডলি ব্যাখ্যা পাওয়া যায়নি।') : (aiData.patient_explanation_en || 'Patient-friendly explanation not found.')}
+                                                                </ReactMarkdown>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {subTab === 'insights' && (
+                                                        <div>
+                                                            <h4 style={{ margin: '0 0 8px', color: 'var(--text-primary)' }}>{isBangla ? 'মেডিকেল ইনসাইট ও পর্যবেক্ষণ' : 'Clinical Medical Insights'}</h4>
+                                                            <div className={styles.markdownContent} style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                                                                <ReactMarkdown>
+                                                                    {isBangla ? (aiData.medical_insights_bn || detailedAnalysis) : (aiData.medical_insights_en || detailedAnalysis)}
+                                                                </ReactMarkdown>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {subTab === 'doctor' && (
+                                                        <div>
+                                                            <h4 style={{ margin: '0 0 8px', color: 'var(--text-primary)' }}>{isBangla ? 'ডাক্তারদের জন্য ক্লিনিকাল সামারি' : 'Doctor-Oriented Clinical Summary'}</h4>
+                                                            <div className={styles.markdownContent} style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                                                                <ReactMarkdown>
+                                                                    {isBangla ? (aiData.doctor_summary_bn || 'ডাক্তার সামারি পাওয়া যায়নি।') : (aiData.doctor_summary_en || 'Doctor-oriented clinical summary not found.')}
+                                                                </ReactMarkdown>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {subTab === 'compare' && (
+                                                        <div>
+                                                            <h4 style={{ margin: '0 0 8px', color: 'var(--text-primary)' }}>{isBangla ? 'পূর্ববর্তী রেকর্ডের সাথে তুলনা' : 'Historical Comparison & Trends'}</h4>
+                                                            <div className={styles.markdownContent} style={{ fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                                                                <ReactMarkdown>
+                                                                    {isBangla ? (aiData.historical_comparison_bn || 'তুলনা পাওয়া যায়নি।') : (aiData.historical_comparison_en || 'Historical comparison trends not found.')}
+                                                                </ReactMarkdown>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </>
                                         ) : (

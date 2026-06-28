@@ -435,7 +435,8 @@
     "rx_label": "Rx:",
     "status_label": "অবস্থা:",
     "date_label": "তারিখ:",
-    "loading": "লোড হচ্ছে..."
+    "loading": "লোড হচ্ছে...",
+    "diagnostic_report": "ডায়াগনস্টিক রিপোর্ট"
   },
   "notifications": {
     "title": "নোটিফিকেশন",

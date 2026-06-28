@@ -211,6 +211,15 @@ router.post('/process-medical-report', authenticateJWT, async (req: Request, res
       }
     }
 
+    // Fetch previous reports for comparative analysis
+    const [prevEvents]: any = await pool.query(
+      `SELECT title, event_type, event_date, severity, summary, key_findings FROM medical_events WHERE patient_id = ? ORDER BY event_date DESC, created_at DESC LIMIT 5`,
+      [patient_id]
+    );
+    const historyText = prevEvents && prevEvents.length > 0
+      ? JSON.stringify(prevEvents, null, 2)
+      : 'No previous medical history available.';
+
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || 'gemini-1.5-flash' });
 
@@ -220,6 +229,9 @@ router.post('/process-medical-report', authenticateJWT, async (req: Request, res
 Primary Objective:
 Accurately read, understand, and analyze medical documents (reports or prescriptions) from image or text input, with zero hallucination.
 
+PATIENT HISTORICAL MEDICAL RECORDS:
+${historyText}
+
 Step-by-step Tasks:
 
 1. OCR & TEXT EXTRACTION:
@@ -228,61 +240,49 @@ Step-by-step Tasks:
    - Do NOT guess missing or unclear text. If unreadable, write "[illegible]".
 
 2. DOCUMENT CLASSIFICATION:
-   - Identify the document type strictly as:
-     - "REPORT" (lab tests, investigations, imaging, pathology, etc.)
+   - Identify the document type strictly as one of:
+     - "REPORT" (lab tests, investigations, pathology, etc.)
      - "PRESCRIPTION" (medicines, dosage, doctor advice)
-   - If mixed, choose the dominant type.
+     - "IMAGING" (X-ray, CT, MRI, Ultrasound, etc.)
+     - "DISCHARGE_SUMMARY" (discharge summary notes)
+     - "ADMISSION_RECORD" (admission records)
+     - "VACCINATION" (vaccine records)
+     - "SURGERY" (surgical history)
+     - "REFERRAL" (referral documents)
+     - "CERTIFICATE" (medical certificates)
+     - "GENERIC" (any other records)
 
-3. MEDICAL ANALYSIS (Three Levels):
+3. MULTI-LEVEL AI SUMMARY:
+   Provide analysis structured across five distinct summaries:
+   a) Quick Summary (2-4 sentences): Short clinical overview.
+   b) Detailed Summary: Complete explanation of the report in simple language.
+   c) Medical Insights: Main diagnosis, key findings (values/reference ranges), abnormal/normal values, recommended follow-up tests, suggested discussion points for their doctor, and risk indicators.
+   d) Patient-Friendly Explanation: Term definitions in plain English/Bangla, why it matters, symptom associations, and lifestyle/wellness considerations.
+   e) Doctor-Oriented Summary: Concise clinical summary preserving medical jargon.
 
-   a) Simple, Easy-to-understand explanation:
-      - Written for a normal non-medical person.
-      - Explain clearly:
-        • What this document is about
-        • What important results were found
-        • Whether the situation looks GOOD / OKAY / NEEDS ATTENTION
-        • What general next steps should be taken
+4. HISTORICAL COMPARISON:
+   Compare the newly uploaded report with the patient's HISTORICAL MEDICAL RECORDS provided above.
+   Identify:
+   - Improvements, stable conditions, or deterioration of laboratory/clinical values.
+   - Disease progression or recovery progress.
+   If no previous records are provided, indicate "No historical records to compare."
 
-   b) Detailed, Professional analysis:
-      - Use correct medical terminology.
-      - Explain abnormal values with:
-        • Normal reference range
-        • Possible clinical meaning
-      - Highlight red flags if any.
-      - Use structured Markdown (bullet points, **bold headings**).
-      - Do NOT make a confirmed diagnosis.
+5. INTELLIGENT ALERTS:
+   Extract any parameters or findings that require:
+   - Immediate clinical attention (CRITICAL)
+   - Follow-up checkups (FOLLOW_UP)
+   - Basic monitoring/information (INFO)
+   Provide these as a list of alert objects.
 
-   c) Disease / Condition Insight (ONLY if evidence suggests one):
-      - Identify the most likely disease or medical condition suggested by the data.
-      - If evidence is insufficient, clearly say:
-        "No specific disease can be confidently identified from this document alone."
+6. BILINGUAL OUTPUT:
+   Provide ALL explanations and summaries in both:
+   - English
+   - Bengali (Bangla, simple and natural language)
 
-      - For identified disease/condition, explain:
-        • Disease name (medical term)
-        • Local / common Bangla name
-        • Primary causes
-        • Common symptoms that patients may experience
-        • Whether this is acute, chronic, mild, or serious
-
-4. BILINGUAL OUTPUT:
-   - Provide ALL explanations in both:
-     - English
-     - Bengali (Bangla, simple and natural language)
-
-5. SAFETY & VALIDATION RULES:
-   - Do NOT invent diseases, values, or medicines.
-   - Do NOT over-diagnose from limited data.
-   - If multiple diseases are possible, list them as "Possible conditions".
-   - Clearly state when doctor consultation is required.
-   - For prescriptions:
-     • Check drug interactions, overdose risk, and age safety.
-   - For reports:
-     • Medicine safety check must be "N/A".
-
-6. SEVERITY GRADING LOGIC:
-   - HIGH: Life-threatening, critical abnormal findings.
-   - MEDIUM: Abnormal findings needing medical follow-up.
-   - LOW: Normal or minor deviations.
+7. SAFETY & VALIDATION RULES:
+   - Do NOT make a confirmed final diagnosis. Always encourage users to consult qualified healthcare professionals.
+   - Clearly state when a doctor consultation is required.
+   - Medicine safety check: for prescriptions, identify potential drug interactions; for reports, return "N/A".
 
 Final Output:
 Return ONLY valid JSON (no explanations, no markdown fences outside text fields).
@@ -290,18 +290,35 @@ Return ONLY valid JSON (no explanations, no markdown fences outside text fields)
 JSON Structure:
 {
   "title": "Short descriptive title (e.g., CBC Report / Prescription by Dr. X)",
-  "event_type": "REPORT or PRESCRIPTION",
+  "event_type": "REPORT / PRESCRIPTION / IMAGING / DISCHARGE_SUMMARY / ADMISSION_RECORD / VACCINATION / SURGERY / REFERRAL / CERTIFICATE / GENERIC",
   "event_date": "YYYY-MM-DD (If not found, use today's date)",
   "severity": "HIGH / MEDIUM / LOW",
 
-  "simple_explanation_en": "A simple, easy-to-understand explanation for a general person.",
-  "simple_explanation_bn": "সাধারণ মানুষের বোঝার মতো সহজ ব্যাখ্যা।",
+  "quick_summary_en": "Quick summary in English",
+  "quick_summary_bn": "বাংলায় সংক্ষিপ্ত সারসংক্ষেপ",
 
-  "detailed_analysis_en": "Professional medical analysis in Markdown.",
-  "detailed_analysis_bn": "Markdown ফরম্যাটে বাংলায় বিস্তারিত মেডিকেল বিশ্লেষণ।",
+  "detailed_summary_en": "Detailed summary in English",
+  "detailed_summary_bn": "বাংলায় বিস্তারিত সারসংক্ষেপ",
 
-  "disease_insight_en": "Disease/condition name, causes, symptoms, and seriousness OR clear statement if not identifiable.",
-  "disease_insight_bn": "রোগের নাম, স্থানীয় নাম, কারণ, সম্ভাব্য উপসর্গ এবং গুরুত্ব—অথবা রোগ নির্ধারণ সম্ভব নয় এমন স্পষ্ট বক্তব্য।",
+  "medical_insights_en": "Medical insights in English (diagnosis, findings, recommended tests, suggested questions).",
+  "medical_insights_bn": "বাংলায় মেডিকেল ইনসাইট (মূল রোগ নির্ণয়, পরীক্ষার ফলাফল, পরবর্তী পরীক্ষা, ডাক্তারকে জিজ্ঞাস্য প্রশ্ন)।",
+
+  "patient_explanation_en": "Patient-friendly explanation (what it means, why it matters, symptom/lifestyle advice) in English.",
+  "patient_explanation_bn": "বাংলায় রোগীর জন্য সহজ ব্যাখ্যা (এর অর্থ কী, এটি কেন গুরুত্বপূর্ণ, উপসর্গ ও লাইফস্টাইল বিষয়ক পরামর্শ)।",
+
+  "doctor_summary_en": "Clinical doctor-oriented summary in English.",
+  "doctor_summary_bn": "ডাক্তারদের জন্য বাংলায় ক্লিনিকাল সারসংক্ষেপ।",
+
+  "historical_comparison_en": "Comparison with previous records in English.",
+  "historical_comparison_bn": "পূর্ববর্তী রেকর্ডের সাথে তুলনা বাংলায়।",
+
+  "alerts": [
+    {
+      "title": "Alert Title",
+      "message": "Detailed warning/info message",
+      "type": "CRITICAL / FOLLOW_UP / INFO"
+    }
+  ],
 
   "extracted_text": "Complete extracted OCR text.",
   "key_findings": ["Key values with status"],
@@ -350,7 +367,7 @@ JSON Structure:
         aiData.event_type || 'REPORT',
         newDate,
         aiData.severity || 'LOW',
-        aiData.simple_explanation_en || '',
+        aiData.quick_summary_en || aiData.simple_explanation_en || '',
         aiData.extracted_text || '',
         JSON.stringify(aiData.key_findings || []),
         JSON.stringify([file_url]),
@@ -358,6 +375,18 @@ JSON Structure:
         JSON.stringify(aiData)
       ]
     );
+
+    // Auto-generate notifications for critical alerts
+    if (aiData.alerts && Array.isArray(aiData.alerts)) {
+      for (const alertObj of aiData.alerts) {
+        if (alertObj.type === 'CRITICAL' || aiData.severity === 'HIGH') {
+          await pool.query(
+            `INSERT INTO notifications (id, user_id, title, content) VALUES (?, ?, ?, ?)`,
+            [crypto.randomUUID(), patient_id, `⚠️ Critical Alert: ${alertObj.title}`, alertObj.message]
+          );
+        }
+      }
+    }
 
     res.status(200).json({ success: true, data: aiData });
   } catch (error: any) {

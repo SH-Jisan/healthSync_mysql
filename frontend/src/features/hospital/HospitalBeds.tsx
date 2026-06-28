@@ -8,7 +8,7 @@ interface BedRow {
     id: number;
     bed_number: string;
     bed_type: string;
-    status: 'AVAILABLE' | 'OCCUPIED';
+    status: 'AVAILABLE' | 'OCCUPIED' | 'CLEANING' | 'MAINTENANCE' | 'RESERVED';
     patient_id?: string;
     assigned_doctor_id?: string;
     admitted_at?: string;
@@ -135,13 +135,13 @@ export default function HospitalBeds() {
     };
 
     const handleReleaseBed = async (bed: BedRow) => {
-        if (!confirm(`Are you sure you want to release bed ${bed.bed_number}?`)) return;
+        if (!confirm(`Are you sure you want to release bed ${bed.bed_number}? It will be marked for cleaning.`)) return;
 
         try {
             const { error } = await supabase
                 .from('hospital_beds')
                 .update({
-                    status: 'AVAILABLE',
+                    status: 'CLEANING',
                     patient_id: null,
                     assigned_doctor_id: null,
                     admitted_at: null
@@ -150,11 +150,26 @@ export default function HospitalBeds() {
 
             if (error) throw error;
 
-            alert('Bed released successfully.');
+            alert('Patient discharged. Bed has been placed in CLEANING status.');
             await fetchData();
         } catch (err: any) {
             console.error('Failed to release bed:', err);
             alert('Failed to release bed: ' + err.message);
+        }
+    };
+
+    const handleUpdateBedStatus = async (bedId: number, status: 'AVAILABLE' | 'CLEANING' | 'MAINTENANCE' | 'RESERVED') => {
+        try {
+            const { error } = await supabase
+                .from('hospital_beds')
+                .update({ status })
+                .eq('id', bedId);
+
+            if (error) throw error;
+            await fetchData();
+        } catch (err: any) {
+            console.error('Failed to update bed status:', err);
+            alert('Failed to update bed status: ' + err.message);
         }
     };
 
@@ -227,7 +242,9 @@ export default function HospitalBeds() {
 
     const totalBeds = beds.length;
     const occupiedBeds = beds.filter(b => b.status === 'OCCUPIED').length;
-    const availableBeds = totalBeds - occupiedBeds;
+    const availableBeds = beds.filter(b => b.status === 'AVAILABLE').length;
+    const cleaningBeds = beds.filter(b => b.status === 'CLEANING').length;
+    const maintenanceBeds = beds.filter(b => b.status === 'MAINTENANCE').length;
 
     return (
         <div className={styles.container}>
@@ -250,6 +267,18 @@ export default function HospitalBeds() {
                         <span className={styles.statLabel}>Available Beds</span>
                     </div>
                     <span className={styles.statVal}>{availableBeds}</span>
+                </div>
+                <div className={`${styles.statCard} ${styles.statCleaning} t-card`} style={{ borderLeft: '4px solid #3b82f6' }}>
+                    <div className={styles.statHeader}>
+                        <span className={styles.statLabel}>Cleaning</span>
+                    </div>
+                    <span className={styles.statVal} style={{ color: '#3b82f6' }}>{cleaningBeds}</span>
+                </div>
+                <div className={`${styles.statCard} ${styles.statMaintenance} t-card`} style={{ borderLeft: '4px solid #f97316' }}>
+                    <div className={styles.statHeader}>
+                        <span className={styles.statLabel}>Maintenance</span>
+                    </div>
+                    <span className={styles.statVal} style={{ color: '#f97316' }}>{maintenanceBeds}</span>
                 </div>
             </div>
 
@@ -284,8 +313,13 @@ export default function HospitalBeds() {
                                     <span className={`${styles.bedBadge} t-badge t-badge-info`}>{bed.bed_type}</span>
                                 </div>
                                 <div className={styles.headerActions}>
-                                    <span className={`t-badge ${bed.status === 'OCCUPIED' ? 't-badge-danger' : 't-badge-success'}`}>
-                                        {bed.status === 'OCCUPIED' ? 'Occupied' : 'Available'}
+                                    <span className={`t-badge ${
+                                        bed.status === 'OCCUPIED' ? 't-badge-danger' : 
+                                        bed.status === 'AVAILABLE' ? 't-badge-success' : 
+                                        bed.status === 'CLEANING' ? 't-badge-info' : 
+                                        bed.status === 'MAINTENANCE' ? 't-badge-warning' : 't-badge-secondary'
+                                    }`}>
+                                        {bed.status.toUpperCase()}
                                     </span>
                                     <button
                                         onClick={() => handleDeleteBed(bed)}
@@ -297,7 +331,7 @@ export default function HospitalBeds() {
                                 </div>
                             </div>
 
-                            {bed.status === 'OCCUPIED' ? (
+                            {bed.status === 'OCCUPIED' && (
                                 <div className={styles.occupiedInfo}>
                                     <div className={styles.infoRow}>
                                         <span className={styles.infoLabel}>Patient:</span>
@@ -317,19 +351,86 @@ export default function HospitalBeds() {
                                     <button 
                                         onClick={() => handleReleaseBed(bed)}
                                         className={`${styles.releaseBtn} t-btn t-btn-danger`}
+                                        style={{ marginTop: '12px', width: '100%' }}
                                     >
                                         Discharge Patient
                                     </button>
                                 </div>
-                            ) : (
+                            )}
+
+                            {bed.status === 'AVAILABLE' && (
                                 <div className={styles.availableInfo}>
                                     <p className={styles.availableText}>This bed is empty and ready for patient admission.</p>
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
+                                        <button 
+                                            onClick={() => handleOpenAssignModal(bed)}
+                                            className={`${styles.assignBtn} t-btn t-btn-primary`}
+                                            style={{ flex: 1 }}
+                                        >
+                                            Allocate Bed
+                                        </button>
+                                        <button 
+                                            onClick={() => handleUpdateBedStatus(bed.id, 'MAINTENANCE')}
+                                            className="t-btn t-btn-secondary"
+                                            style={{ fontSize: '12px' }}
+                                        >
+                                            Maintenance
+                                        </button>
+                                        <button 
+                                            onClick={() => handleUpdateBedStatus(bed.id, 'CLEANING')}
+                                            className="t-btn t-btn-secondary"
+                                            style={{ fontSize: '12px' }}
+                                        >
+                                            Cleaning
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {bed.status === 'CLEANING' && (
+                                <div className={styles.availableInfo} style={{ borderTop: '2px solid #3b82f6', paddingTop: '12px' }}>
+                                    <p className={styles.availableText}>This bed is undergoing sanitization and cleaning protocols.</p>
                                     <button 
-                                        onClick={() => handleOpenAssignModal(bed)}
-                                        className={`${styles.assignBtn} t-btn t-btn-primary`}
+                                        onClick={() => handleUpdateBedStatus(bed.id, 'AVAILABLE')}
+                                        className="t-btn t-btn-success"
+                                        style={{ marginTop: '12px', width: '100%' }}
                                     >
-                                        Allocate Bed
+                                        Complete Cleaning & Ready
                                     </button>
+                                </div>
+                            )}
+
+                            {bed.status === 'MAINTENANCE' && (
+                                <div className={styles.availableInfo} style={{ borderTop: '2px solid #f97316', paddingTop: '12px' }}>
+                                    <p className={styles.availableText}>This bed is currently out-of-service for maintenance.</p>
+                                    <button 
+                                        onClick={() => handleUpdateBedStatus(bed.id, 'AVAILABLE')}
+                                        className="t-btn t-btn-success"
+                                        style={{ marginTop: '12px', width: '100%' }}
+                                    >
+                                        Complete Maintenance & Ready
+                                    </button>
+                                </div>
+                            )}
+
+                            {bed.status === 'RESERVED' && (
+                                <div className={styles.availableInfo} style={{ borderTop: '2px solid #a855f7', paddingTop: '12px' }}>
+                                    <p className={styles.availableText}>This bed is reserved for an incoming patient admission request.</p>
+                                    <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                                        <button 
+                                            onClick={() => handleOpenAssignModal(bed)}
+                                            className={`${styles.assignBtn} t-btn t-btn-primary`}
+                                            style={{ flex: 1 }}
+                                        >
+                                            Allocate Bed
+                                        </button>
+                                        <button 
+                                            onClick={() => handleUpdateBedStatus(bed.id, 'AVAILABLE')}
+                                            className="t-btn t-btn-secondary"
+                                        >
+                                            Release
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>

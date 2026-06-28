@@ -498,7 +498,8 @@
       "rx_label": "Rx:",
       "status_label": "Status:",
       "date_label": "Date:",
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "diagnostic_report": "Diagnostic Report"
     },
     "notifications": {
       "title": "Notifications",

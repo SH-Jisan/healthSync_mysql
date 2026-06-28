@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/shared/lib/supabaseClient';
-import { User, Phone, Briefcase, GraduationCap, CurrencyDollar, FloppyDisk } from 'phosphor-react';
+import { User, Phone, Briefcase, GraduationCap, CurrencyDollar, FloppyDisk, IdentificationCard, ShieldCheck } from 'phosphor-react';
 import styles from './EditProfile.module.css';
 
 export default function EditProfile() {
@@ -15,6 +15,21 @@ export default function EditProfile() {
     // Common Fields
     const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
+    const [district, setDistrict] = useState('');
+    const [address, setAddress] = useState('');
+
+    // Citizen Specific Fields
+    const [nationalId, setNationalId] = useState('');
+    const [birthRegNumber, setBirthRegNumber] = useState('');
+    const [passportNumber, setPassportNumber] = useState('');
+    const [bloodGroup, setBloodGroup] = useState('');
+    const [allergies, setAllergies] = useState('');
+    const [chronicDiseases, setChronicDiseases] = useState('');
+    const [vaccinationHistory, setVaccinationHistory] = useState('');
+    const [insuranceInfo, setInsuranceInfo] = useState('');
+    const [organDonorStatus, setOrganDonorStatus] = useState('NONE');
+    const [emergencyContactName, setEmergencyContactName] = useState('');
+    const [emergencyContactPhone, setEmergencyContactPhone] = useState('');
 
     // Doctor Specific Fields
     const [specialty, setSpecialty] = useState('');
@@ -22,6 +37,7 @@ export default function EditProfile() {
     const [experience, setExperience] = useState('');
     const [consultationFee, setConsultationFee] = useState('');
     const [about, setAbout] = useState('');
+    const [licenseNumber, setLicenseNumber] = useState('');
 
     const specialties = [
         'General Medicine', 'Cardiology', 'Neurology', 'Pediatrics',
@@ -38,6 +54,8 @@ export default function EditProfile() {
                 setRole(data.role || 'CITIZEN');
                 setFullName(data.full_name || '');
                 setPhone(data.phone || '');
+                setDistrict(data.district || '');
+                setAddress(data.address || '');
 
                 if (data.role === 'DOCTOR') {
                     setSpecialty(data.specialty || '');
@@ -45,6 +63,19 @@ export default function EditProfile() {
                     setExperience(data.experience || '');
                     setConsultationFee(data.consultation_fee || '');
                     setAbout(data.about || '');
+                    setLicenseNumber(data.license_number || '');
+                } else if (data.role === 'CITIZEN') {
+                    setNationalId(data.national_id || '');
+                    setBirthRegNumber(data.birth_reg_number || '');
+                    setPassportNumber(data.passport_number || '');
+                    setBloodGroup(data.blood_group || '');
+                    setAllergies(data.allergies || '');
+                    setChronicDiseases(data.chronic_diseases || '');
+                    setVaccinationHistory(data.vaccination_history || '');
+                    setInsuranceInfo(data.insurance_info || '');
+                    setOrganDonorStatus(data.organ_donor_status || 'NONE');
+                    setEmergencyContactName(data.emergency_contact_name || '');
+                    setEmergencyContactPhone(data.emergency_contact_phone || '');
                 }
             }
             setLoading(false);
@@ -60,9 +91,11 @@ export default function EditProfile() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const updates: Record<string, string | null | undefined> = {
+        const updates: Record<string, any> = {
             full_name: fullName,
             phone: phone,
+            district: district,
+            address: address,
             updated_at: new Date().toISOString(),
         };
 
@@ -72,14 +105,33 @@ export default function EditProfile() {
             updates.experience = experience;
             updates.consultation_fee = consultationFee;
             updates.about = about;
+            updates.license_number = licenseNumber;
+        } else if (role === 'CITIZEN') {
+            updates.national_id = nationalId || null;
+            updates.birth_reg_number = birthRegNumber || null;
+            updates.passport_number = passportNumber || null;
+            updates.blood_group = bloodGroup;
+            updates.allergies = allergies;
+            updates.chronic_diseases = chronicDiseases;
+            updates.vaccination_history = vaccinationHistory;
+            updates.insurance_info = insuranceInfo;
+            updates.organ_donor_status = organDonorStatus;
+            updates.emergency_contact_name = emergencyContactName;
+            updates.emergency_contact_phone = emergencyContactPhone;
+            
+            // Auto-generate health_id if missing
+            const checkEmptyHealthId = await supabase.from('User').select('health_id').eq('id', user.id).single();
+            if (!checkEmptyHealthId.data?.health_id) {
+                updates.health_id = 'HS-' + Math.floor(10000000 + Math.random() * 90000000);
+            }
         }
 
         const { error } = await supabase.from('User').update(updates).eq('id', user.id);
 
         if (error) {
-            alert(t('profile.update_error'));
+            alert('Failed to update profile: ' + error.message);
         } else {
-            alert(t('profile.update_success'));
+            alert('Profile updated successfully.');
             navigate('/profile');
         }
         setSaving(false);
@@ -124,12 +176,195 @@ export default function EditProfile() {
                     </div>
                 </div>
 
+                <div className={styles.formGroup}>
+                    <label className={styles.label}>District</label>
+                    <input
+                        type="text"
+                        value={district}
+                        onChange={e => setDistrict(e.target.value)}
+                        className={styles.input}
+                        placeholder="e.g. Dhaka, Sylhet"
+                    />
+                </div>
+
+                <div className={styles.formGroup}>
+                    <label className={styles.label}>Address</label>
+                    <input
+                        type="text"
+                        value={address}
+                        onChange={e => setAddress(e.target.value)}
+                        className={styles.input}
+                        placeholder="e.g. House 24, Road 4, Banani"
+                    />
+                </div>
+
+                {/* Citizen Specific Medical details Info */}
+                {role === 'CITIZEN' && (
+                    <>
+                        <h3 className={`${styles.sectionHeader} ${styles.doctorSection}`}>
+                            Digital Health Credentials & Medical Profiles
+                        </h3>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>National ID (NID)</label>
+                            <div className={styles.inputWrapper}>
+                                <IdentificationCard size={20} color="var(--text-secondary)" />
+                                <input
+                                    type="text"
+                                    value={nationalId}
+                                    onChange={e => setNationalId(e.target.value)}
+                                    className={styles.input}
+                                    placeholder="Enter 10 or 17 digit NID"
+                                />
+                            </div>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Birth Registration Number</label>
+                            <input
+                                type="text"
+                                value={birthRegNumber}
+                                onChange={e => setBirthRegNumber(e.target.value)}
+                                className={styles.input}
+                                placeholder="Enter 17 digit Birth Reg Number"
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Passport Number</label>
+                            <input
+                                type="text"
+                                value={passportNumber}
+                                onChange={e => setPassportNumber(e.target.value)}
+                                className={styles.input}
+                                placeholder="Enter Passport Number"
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Blood Group</label>
+                            <select
+                                value={bloodGroup}
+                                onChange={e => setBloodGroup(e.target.value)}
+                                className={styles.input}
+                            >
+                                <option value="">Select Blood Group</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Allergies</label>
+                            <textarea
+                                rows={2}
+                                value={allergies}
+                                onChange={e => setAllergies(e.target.value)}
+                                className={styles.textarea}
+                                placeholder="e.g. Peanuts, Penicillin, Dust allergies..."
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Chronic Diseases / Medical History</label>
+                            <textarea
+                                rows={2}
+                                value={chronicDiseases}
+                                onChange={e => setChronicDiseases(e.target.value)}
+                                className={styles.textarea}
+                                placeholder="e.g. Diabetes, Hypertension, Asthma..."
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Vaccination History</label>
+                            <textarea
+                                rows={2}
+                                value={vaccinationHistory}
+                                onChange={e => setVaccinationHistory(e.target.value)}
+                                className={styles.textarea}
+                                placeholder="e.g. Covid-19 Booster, Hepatitis B, Tetanus..."
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Insurance Details</label>
+                            <input
+                                type="text"
+                                value={insuranceInfo}
+                                onChange={e => setInsuranceInfo(e.target.value)}
+                                className={styles.input}
+                                placeholder="Policy Provider, Account Number..."
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Organ Donor Status</label>
+                            <select
+                                value={organDonorStatus}
+                                onChange={e => setOrganDonorStatus(e.target.value)}
+                                className={styles.input}
+                            >
+                                <option value="NONE">Not Registered</option>
+                                <option value="KIDNEY">Kidney Donor</option>
+                                <option value="CORNEA">Cornea Donor</option>
+                                <option value="HEART">Heart/Lungs Donor</option>
+                                <option value="ALL_ORGANS">Full Organ Donor</option>
+                            </select>
+                        </div>
+
+                        <h3 className={styles.sectionHeader} style={{ marginTop: '24px' }}>Emergency Contact</h3>
+                        
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Emergency Contact Person</label>
+                            <input
+                                type="text"
+                                value={emergencyContactName}
+                                onChange={e => setEmergencyContactName(e.target.value)}
+                                className={styles.input}
+                                placeholder="Relative / Friend full name"
+                            />
+                        </div>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Emergency Contact Phone</label>
+                            <input
+                                type="tel"
+                                value={emergencyContactPhone}
+                                onChange={e => setEmergencyContactPhone(e.target.value)}
+                                className={styles.input}
+                                placeholder="Phone number"
+                            />
+                        </div>
+                    </>
+                )}
+
                 {/* Doctor Specific Info */}
                 {role === 'DOCTOR' && (
                     <>
                         <h3 className={`${styles.sectionHeader} ${styles.doctorSection}`}>
                             {t('profile.professional_details')}
                         </h3>
+
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Medical Council License Number</label>
+                            <div className={styles.inputWrapper}>
+                                <ShieldCheck size={20} color="var(--text-secondary)" />
+                                <input
+                                    type="text"
+                                    value={licenseNumber}
+                                    onChange={e => setLicenseNumber(e.target.value)}
+                                    className={styles.input}
+                                    placeholder="Enter BMDC registration / Council License"
+                                />
+                            </div>
+                        </div>
 
                         <div className={styles.formGroup}>
                             <label className={styles.label}>{t('profile.fields.specialty')}</label>

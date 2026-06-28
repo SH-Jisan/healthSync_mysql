@@ -85,18 +85,16 @@ export default function DoctorPatientProfile() {
 
                         {/* Assign Test Button using SharedModal */}
                         <button
-                            className={styles.actionBtn}
+                            className={`${styles.actionBtn} ${styles.btnTest}`}
                             onClick={() => setShowTestModal(true)}
-                            style={{ background: '#EEF2FF', color: '#4338ca', borderColor: '#C7D2FE' }}
                         >
                             <Flask size={32} weight="duotone" />
                             <div><strong>{t('dashboard.doctor.profile.assign_test') || 'Assign Tests'}</strong><span>{t('dashboard.doctor.profile.order_diagnostics_desc')}</span></div>
                         </button>
 
                         <button
-                            className={styles.actionBtn}
+                            className={`${styles.actionBtn} ${styles.btnRx}`}
                             onClick={() => setShowPrescriptionModal(true)}
-                            style={{ background: '#ECFDF5', color: '#047857', borderColor: '#6EE7B7' }}
                         >
                             <Prescription size={32} weight="duotone" />
                             <div><strong>{t('dashboard.doctor.profile.write_rx') || 'Write Prescription'}</strong><span>{t('dashboard.doctor.profile.write_rx_desc')}</span></div>

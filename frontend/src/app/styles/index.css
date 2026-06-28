@@ -9,34 +9,34 @@
 /* ============================================================ */
 body.dark-theme {
     /* --- Core Surfaces (Layered, no pure black) --- */
-    --background: #0d1117;       /* Primary app bg  (GitHub Dark bg)  */
-    --surface: #161b22;          /* Cards / panels                     */
-    --surface-elevated: #1c2128; /* Raised cards, dropdowns            */
-    --surface-overlay: #1f2937;  /* Modals, popovers                   */
-    --surface-subtle: rgba(30, 39, 55, 0.6); /* Tinted panel bg        */
-    --surface-dark: #0d1117;
+    --background: #1A1D21;       /* Primary app bg (Slack-inspired soft dark-gray) */
+    --surface: #23272F;          /* Cards / panels (Secondary Background) */
+    --surface-elevated: #2A2F38; /* Raised cards, dropdowns (Card Background) */
+    --surface-overlay: #343A46;  /* Modals, popovers (Elevated Surfaces) */
+    --surface-subtle: rgba(35, 39, 47, 0.6); /* Tinted panel bg */
+    --surface-dark: #1E1E24;
 
     /* --- Borders --- */
-    --border: #30363d;           /* Subtle divider                     */
-    --border-hover: #484f58;     /* On hover                           */
-    --border-strong: #6e7681;    /* High contrast border               */
+    --border: #404854;           /* Subtle divider */
+    --border-hover: #4A5563;     /* On hover */
+    --border-strong: #5B6675;    /* High contrast border */
 
     /* --- Text Colors --- */
-    --text-primary: #e6edf3;     /* Bright-ish white (not stark)       */
-    --text-secondary: #8d96a0;   /* Muted body text                    */
-    --text-muted: #545d68;       /* Placeholder / disabled             */
-    --text-inverse: #0d1117;
+    --text-primary: #F3F4F6;     /* Light gray / Off-white (clean readability) */
+    --text-secondary: #9CA3AF;   /* Medium gray */
+    --text-muted: #6B7280;       /* Soft gray muted text */
+    --text-inverse: #1A1D21;
 
     /* --- Brand Colors — slightly lighter for dark bg --- */
-    --primary: #38bdf8;          /* Sky-400: pops on dark bg           */
+    --primary: #38bdf8;          /* Sky-400: pops on dark bg */
     --primary-dark: #0ea5e9;
     --primary-light: rgba(56, 189, 248, 0.12);
 
-    --accent: #2dd4bf;           /* Teal-400                           */
+    --accent: #2dd4bf;           /* Teal-400 */
     --accent-dark: #14b8a6;
     --accent-light: rgba(45, 212, 191, 0.12);
 
-    --highlight: #818cf8;        /* Indigo-400                         */
+    --highlight: #818cf8;        /* Indigo-400 */
     --highlight-dark: #6366f1;
     --highlight-light: rgba(129, 140, 248, 0.12);
 
@@ -45,12 +45,12 @@ body.dark-theme {
     --gradient-end: #2dd4bf;
     --gradient-primary: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
     --gradient-accent: linear-gradient(135deg, #818cf8 0%, #38bdf8 100%);
-    --gradient-surface: linear-gradient(180deg, rgba(22, 27, 34, 0.9) 0%, rgba(22, 27, 34, 0.7) 100%);
+    --gradient-surface: linear-gradient(180deg, rgba(35, 39, 47, 0.9) 0%, rgba(35, 39, 47, 0.7) 100%);
 
     /* --- Glassmorphism (dark-aware) --- */
-    --glass-surface: rgba(22, 27, 34, 0.85);
-    --glass-border: rgba(255, 255, 255, 0.06);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    --glass-surface: rgba(35, 39, 47, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 
     /* --- Semantic Colors (softened for dark bg) --- */
     --success: #34d399;
@@ -63,11 +63,11 @@ body.dark-theme {
     --info-light: rgba(96, 165, 250, 0.12);
 
     /* --- Shadows (stronger on dark) --- */
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 20px -3px rgba(0, 0, 0, 0.5), 0 4px 8px -4px rgba(0, 0, 0, 0.3);
-    --shadow-xl: 0 20px 30px -5px rgba(0, 0, 0, 0.6), 0 8px 12px -6px rgba(0, 0, 0, 0.4);
-    --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.2);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.25), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 20px -3px rgba(0, 0, 0, 0.3), 0 4px 8px -4px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 20px 30px -5px rgba(0, 0, 0, 0.35), 0 8px 12px -6px rgba(0, 0, 0, 0.25);
+    --shadow-glow: 0 0 20px rgba(56, 189, 248, 0.15);
 }
 
 /* Dark mode scrollbar */

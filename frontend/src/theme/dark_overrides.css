@@ -8,14 +8,14 @@
    1. GLOBAL TEMPLATES (ui_templates.css hardcoded values)
    -------------------------------------------------------------------------- */
 body.dark-theme .t-card-glass {
-    background: rgba(22, 27, 34, 0.75) !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    background: rgba(35, 39, 47, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 body.dark-theme .t-card-glass:hover {
-    background: rgba(28, 33, 40, 0.95) !important;
+    background: rgba(42, 47, 56, 0.95) !important;
 }
 body.dark-theme .t-glass-nav {
-    background: rgba(22, 27, 34, 0.9) !important;
+    background: rgba(35, 39, 47, 0.9) !important;
 }
 body.dark-theme .t-table th {
     background: var(--surface-elevated) !important;
@@ -36,7 +36,7 @@ body.dark-theme .t-btn-secondary:hover:not(:disabled) {
 @supports (backdrop-filter: blur(10px)) {
     body.dark-theme .navbar,
     body.dark-theme [class*="navbar"] {
-        background: rgba(13, 17, 23, 0.9) !important;
+        background: rgba(26, 29, 33, 0.9) !important;
         border-bottom-color: var(--border) !important;
     }
 }
@@ -50,13 +50,13 @@ body.dark-theme [class*="searchShortcut"] {
    3. GLOBAL SEARCH MODAL - fixes hardcoded rgba(248,250,252) values
    -------------------------------------------------------------------------- */
 body.dark-theme [class*="sidebarPane"] {
-    background: rgba(22, 27, 34, 0.6) !important;
+    background: rgba(35, 39, 47, 0.6) !important;
 }
 body.dark-theme [class*="filterSectionRow"] {
-    background: rgba(28, 33, 40, 0.8) !important;
+    background: rgba(42, 47, 56, 0.8) !important;
 }
 body.dark-theme [class*="paginationBar"] {
-    background: rgba(22, 27, 34, 0.7) !important;
+    background: rgba(35, 39, 47, 0.7) !important;
 }
 body.dark-theme [class*="clearBtn"]:hover {
     background: rgba(255, 255, 255, 0.06) !important;
@@ -273,7 +273,7 @@ body.dark-theme [class*="aiResponse"] {
    13. TOOLTIP DARK FIX (Sidebar collapsed tooltips)
    -------------------------------------------------------------------------- */
 body.dark-theme [class*="navIcon"][data-tooltip]::after {
-    background: rgba(22, 27, 34, 0.97) !important;
+    background: rgba(35, 39, 47, 0.97) !important;
     border-color: rgba(255, 255, 255, 0.1) !important;
 }
 

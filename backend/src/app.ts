@@ -6,6 +6,7 @@ import dbRouter from './routes/db.js';
 import storageRouter from './routes/storage.js';
 import rpcRouter from './routes/rpc.js';
 import functionsRouter from './routes/functions.js';
+import semanticSearchRouter from './routes/semanticSearch.js';
 
 const app = express();
 
@@ -23,5 +24,6 @@ app.use('/api/db', dbRouter);
 app.use('/api/storage', storageRouter);
 app.use('/api/rpc', rpcRouter);
 app.use('/api/functions', functionsRouter);
+app.use('/api/functions', semanticSearchRouter);
 
 export default app;

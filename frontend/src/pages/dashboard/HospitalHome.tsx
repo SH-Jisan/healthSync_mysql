@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { House, User, Users, Drop, Bed } from 'phosphor-react';
+import { House, User, Users, Drop, Bed, ShieldCheck } from 'phosphor-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import HospitalOverview from '../../features/hospital/HospitalOverview';
 import HospitalDoctors from '../../features/hospital/HospitalDoctors';
 import HospitalPatients from '../../features/hospital/HospitalPatients';
 import HospitalBloodBank from "../../features/hospital/HospitalBloodBank";
 import HospitalBeds from '../../features/hospital/HospitalBeds';
+import HospitalAuditLogs from '../../features/hospital/HospitalAuditLogs';
 import styles from './styles/HospitalHome.module.css';
 
 export default function HospitalHome() {
     const { t } = useTranslation();
-    const [activeTab, setActiveTab] = useState<'overview' | 'doctors' | 'patients' | 'blood' | 'beds'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'doctors' | 'patients' | 'blood' | 'beds' | 'audit'>('overview');
 
     const tabs = [
         { id: 'overview', label: t('dashboard.hospital.tabs.overview'), Icon: House },
@@ -19,6 +20,7 @@ export default function HospitalHome() {
         { id: 'patients', label: t('dashboard.hospital.tabs.patients'), Icon: Users },
         { id: 'blood', label: t('dashboard.hospital.tabs.blood'), Icon: Drop },
         { id: 'beds', label: t('dashboard.hospital.tabs.beds'), Icon: Bed },
+        { id: 'audit', label: 'Audit Trail', Icon: ShieldCheck }
     ] as const;
 
     return (
@@ -68,6 +70,7 @@ export default function HospitalHome() {
                         {activeTab === 'patients' && <HospitalPatients />}
                         {activeTab === 'blood' && <HospitalBloodBank />}
                         {activeTab === 'beds' && <HospitalBeds />}
+                        {activeTab === 'audit' && <HospitalAuditLogs />}
                     </motion.div>
                 </AnimatePresence>
             </div>

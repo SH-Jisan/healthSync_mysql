@@ -146,9 +146,9 @@ export default function PatientPrescriptions() {
 
     // Helper to render badge style
     const getBadgeStyle = (type: string) => {
-        if (type === 'PRESCRIPTION') return { background: '#ECFDF5', color: '#059669' };
-        if (type === 'TEST_ORDER') return { background: '#EEF2FF', color: '#4338ca' };
-        return { background: '#FFFBEB', color: '#D97706' }; // Diagnostic
+        if (type === 'PRESCRIPTION') return { background: 'var(--success-light)', color: 'var(--success)' };
+        if (type === 'TEST_ORDER') return { background: 'var(--highlight-light)', color: 'var(--highlight)' };
+        return { background: 'var(--warning-light)', color: 'var(--warning)' }; // Diagnostic
     };
 
     const filteredItems = items.filter(item => {
@@ -218,7 +218,7 @@ export default function PatientPrescriptions() {
                                     key={`${item.event_type}-${item.id}`}
                                     className={styles.card}
                                     onClick={() => setSelectedItem(item)}
-                                    style={{ borderLeft: item.event_type === 'DIAGNOSTIC_REPORT' ? '4px solid #F59E0B' : '1px solid #e2e8f0' }}
+                                    style={{ borderLeft: item.event_type === 'DIAGNOSTIC_REPORT' ? '4px solid #F59E0B' : '1px solid var(--border)' }}
                                 >
                                     <div className={styles.cardHeader}>
                                         <div className={styles.iconBox} style={getBadgeStyle(item.event_type)}>
