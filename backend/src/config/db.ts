@@ -238,6 +238,36 @@ const pool = mysql.createPool({
     `);
     console.log('✅ Checked/Created patient_referrals table successfully.');
 
+    // 13. Ensure ai_chat_sessions table exists
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS ai_chat_sessions (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id VARCHAR(255) NOT NULL,
+        title VARCHAR(255) NOT NULL DEFAULT 'Health Conversation',
+        is_pinned BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES \`User\`(id) ON DELETE CASCADE
+      )
+    `);
+    await addColumnSafely('ai_chat_sessions', 'is_pinned', 'BOOLEAN DEFAULT FALSE');
+    console.log('✅ Checked/Created ai_chat_sessions table successfully.');
+
+    // 14. Ensure ai_chat_messages table exists
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS ai_chat_messages (
+        id VARCHAR(255) PRIMARY KEY,
+        session_id VARCHAR(255) NOT NULL,
+        sender VARCHAR(50) NOT NULL,
+        message LONGTEXT NOT NULL,
+        referenced_event_id VARCHAR(255) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (session_id) REFERENCES ai_chat_sessions(id) ON DELETE CASCADE,
+        FOREIGN KEY (referenced_event_id) REFERENCES medical_events(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('✅ Checked/Created ai_chat_messages table successfully.');
+
     connection.release();
   } catch (error: any) {
     console.error('❌ Database connection/initialization failed:', error.message);

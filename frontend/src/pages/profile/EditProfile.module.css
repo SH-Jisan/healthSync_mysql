@@ -1,131 +1,184 @@
+/* EditProfile.module.css - Enterprise Form Layout */
+
 .container {
-    max-width: 600px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 1rem;
+    padding: 1.5rem 1rem 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
-.title {
-    color: var(--primary);
-    margin-bottom: 2rem;
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 350px;
+    color: var(--text-secondary, #94a3b8);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.pageHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.pageTitle {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--text-primary, #f1f5f9);
 }
 
 .formCard {
-    background: var(--surface);
-    padding: 2rem;
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
+    background: var(--surface-elevated, #23272f);
+    border: 1px solid var(--border, #404854);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 .sectionHeader {
-    border-bottom: 1px solid var(--border);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary, #f1f5f9);
+    margin: 0 0 16px;
     padding-bottom: 10px;
-    margin-bottom: 1.5rem;
-    color: var(--text-secondary);
-    font-size: 1.1rem;
+    border-bottom: 1px solid var(--border, #404854);
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.doctorSection {
-    margin: 2rem 0 1.5rem;
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
 }
 
 .formGroup {
-    margin-bottom: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    font-size: 0.9rem;
-    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary, #cbd5e1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .inputWrapper {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--surface-elevated);
-    transition: border-color 0.2s;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border, #404854);
+    background: var(--surface, #1e1e24);
+    transition: all 0.2s ease;
 }
 
 .inputWrapper:focus-within {
-    border-color: var(--primary);
+    border-color: var(--primary, #3b82f6);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.inputIcon {
+    color: var(--text-muted, #64748b);
+    flex-shrink: 0;
 }
 
 .input {
     border: none;
     outline: none;
     width: 100%;
-    font-size: 1rem;
+    font-size: 14px;
     background: transparent;
-    color: var(--text-primary);
+    color: var(--text-primary, #f1f5f9);
+    font-family: inherit;
+}
+
+.select {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+    background: transparent;
+    color: var(--text-primary, #f1f5f9);
+    font-family: inherit;
+    cursor: pointer;
 }
 
 .textarea {
     width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    margin-top: 5px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border, #404854);
+    background: var(--surface, #1e1e24);
+    color: var(--text-primary, #f1f5f9);
+    font-size: 14px;
+    outline: none;
     font-family: inherit;
     resize: vertical;
-    background: var(--surface-elevated);
-    color: var(--text-primary);
+}
+
+.textarea:focus {
+    border-color: var(--primary, #3b82f6);
 }
 
 .buttonGroup {
     display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
+    gap: 16px;
+    justify-content: flex-end;
+    margin-top: 10px;
 }
 
 .cancelBtn {
-    flex: 1;
-    padding: 12px;
-    background: transparent;
-    border: 1px solid var(--text-secondary);
-    border-radius: 8px;
+    padding: 12px 24px;
+    border: 1px solid var(--border, #404854);
+    border-radius: 12px;
+    background: var(--surface, #1e1e24);
+    color: var(--text-secondary, #cbd5e1);
+    font-weight: 600;
+    font-size: 14px;
     cursor: pointer;
-    font-weight: bold;
-    color: var(--text-primary);
-    transition: background 0.2s;
+    transition: all 0.2s ease;
 }
 
 .cancelBtn:hover {
-    background: var(--surface-elevated);
+    background: var(--surface-overlay, #2a2f38);
 }
 
 .saveBtn {
-    flex: 1;
-    padding: 12px;
-    background: var(--primary);
-    color: white;
+    padding: 12px 28px;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
+    background: var(--primary, #3b82f6);
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
     cursor: pointer;
-    font-weight: bold;
     display: flex;
-    justify-content: center;
     align-items: center;
     gap: 8px;
-    transition: background 0.2s;
-}
-
-.saveBtn:hover {
-    background: var(--primary-dark);
+    transition: all 0.2s ease;
 }
 
 .saveBtn:disabled {
-    opacity: 0.7;
+    opacity: 0.6;
     cursor: not-allowed;
 }
 
-.loading {
-    text-align: center;
-    margin-top: 3rem;
-    color: var(--text-secondary);
+.saveBtn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }

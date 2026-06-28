@@ -359,14 +359,21 @@ export const supabase = {
     invoke: async (functionName: string, options?: any) => {
       try {
         const token = localStorage.getItem('healthsync_auth_token');
-        const response = await fetch(`${BACKEND_URL}/api/functions/${functionName}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': token ? `Bearer ${token}` : ''
-          },
-          body: JSON.stringify(options?.body || {})
-        });
+        const method = options?.method || 'POST';
+        const headers: Record<string, string> = {
+          'Authorization': token ? `Bearer ${token}` : ''
+        };
+        if (method !== 'GET') {
+          headers['Content-Type'] = 'application/json';
+        }
+        const fetchOptions: RequestInit = {
+          method,
+          headers
+        };
+        if (method !== 'GET' && options?.body) {
+          fetchOptions.body = JSON.stringify(options.body);
+        }
+        const response = await fetch(`${BACKEND_URL}/api/functions/${functionName}`, fetchOptions);
 
         const resData = await response.json();
         if (!response.ok) {

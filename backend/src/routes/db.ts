@@ -341,29 +341,30 @@ router.post('/query', authenticateJWT, async (req: Request, res: Response) => {
 
     if (action === 'select') {
       let baseSql = '';
+      const sel = Array.isArray(selectFields) ? selectFields.join(',') : (selectFields || '');
 
       // Handle specific relations joins
-      if (table === 'blood_donors' && (selectFields.includes('profiles') || selectFields.includes('User'))) {
+      if (table === 'blood_donors' && (sel.includes('profiles') || sel.includes('User'))) {
         baseSql = `SELECT blood_donors.*, u_prof.full_name AS profiles_full_name, u_prof.phone AS profiles_phone, u_prof.blood_group AS profiles_blood_group, u_prof.district AS profiles_district, u_prof.gender AS profiles_gender, u_prof.email AS profiles_email FROM blood_donors INNER JOIN \`User\` AS u_prof ON blood_donors.user_id = u_prof.id`;
-      } else if (table === 'blood_requests' && (selectFields.includes('profiles') || selectFields.includes('User'))) {
+      } else if (table === 'blood_requests' && (sel.includes('profiles') || sel.includes('User'))) {
         baseSql = `SELECT blood_requests.*, u_prof.full_name AS profiles_full_name, u_prof.phone AS profiles_phone FROM blood_requests LEFT JOIN \`User\` AS u_prof ON blood_requests.requester_id = u_prof.id`;
-      } else if (table === 'medical_events' && (selectFields.includes('uploader') || selectFields.includes('profiles') || selectFields.includes('User'))) {
+      } else if (table === 'medical_events' && (sel.includes('uploader') || sel.includes('profiles') || sel.includes('User'))) {
         baseSql = `SELECT medical_events.*, u_prof.full_name AS uploader_full_name, u_prof.specialty AS uploader_specialty, p_prof.full_name AS profiles_full_name, p_prof.phone AS profiles_phone FROM medical_events LEFT JOIN \`User\` AS u_prof ON medical_events.uploader_id = u_prof.id LEFT JOIN \`User\` AS p_prof ON medical_events.patient_id = p_prof.id`;
-      } else if (table === 'patient_payments' && (selectFields.includes('provider') || selectFields.includes('profiles') || selectFields.includes('patient') || selectFields.includes('User'))) {
+      } else if (table === 'patient_payments' && (sel.includes('provider') || sel.includes('profiles') || sel.includes('patient') || sel.includes('User'))) {
         baseSql = `SELECT patient_payments.*, provider_prof.full_name AS provider_full_name, p_prof.full_name AS profiles_full_name, p_prof.email AS profiles_email, p_prof.phone AS profiles_phone FROM patient_payments LEFT JOIN \`User\` AS provider_prof ON patient_payments.provider_id = provider_prof.id LEFT JOIN \`User\` AS p_prof ON patient_payments.patient_id = p_prof.id`;
       } else if (table === 'appointments' || table === 'Appointment') {
         baseSql = `SELECT ${escapeId(table)}.*, doc_prof.full_name AS doctor_full_name, doc_prof.specialty AS doctor_specialty, hosp_prof.full_name AS hospital_full_name, hosp_prof.address AS hospital_address, pat_prof.full_name AS profiles_full_name, pat_prof.phone AS profiles_phone, pat_prof.blood_group AS profiles_blood_group, pat_prof.email AS profiles_email FROM ${escapeId(table)} LEFT JOIN \`User\` AS doc_prof ON ${escapeId(table)}.doctor_id = doc_prof.id LEFT JOIN \`User\` AS hosp_prof ON ${escapeId(table)}.hospital_id = hosp_prof.id LEFT JOIN \`User\` AS pat_prof ON ${escapeId(table)}.patient_id = pat_prof.id`;
-      } else if (table === 'diagnostic_patients' && selectFields.includes('patient')) {
+      } else if (table === 'diagnostic_patients' && sel.includes('patient')) {
         baseSql = `SELECT diagnostic_patients.*, p_prof.full_name AS profiles_full_name, p_prof.email AS profiles_email, p_prof.phone AS profiles_phone FROM diagnostic_patients LEFT JOIN \`User\` AS p_prof ON diagnostic_patients.patient_id = p_prof.id`;
-      } else if (table === 'hospital_beds' && (selectFields.includes('patient') || selectFields.includes('doctor'))) {
+      } else if (table === 'hospital_beds' && (sel.includes('patient') || sel.includes('doctor'))) {
         baseSql = `SELECT hospital_beds.*, patient_prof.full_name AS patient_full_name, patient_prof.phone AS patient_phone, patient_prof.email AS patient_email, doc_prof.full_name AS doctor_full_name FROM hospital_beds LEFT JOIN \`User\` AS patient_prof ON hospital_beds.patient_id = patient_prof.id LEFT JOIN \`User\` AS doc_prof ON hospital_beds.assigned_doctor_id = doc_prof.id`;
-      } else if (table === 'doctor_patients' && (selectFields.includes('profiles') || selectFields.includes('User'))) {
+      } else if (table === 'doctor_patients' && (sel.includes('profiles') || sel.includes('User'))) {
         baseSql = `SELECT doctor_patients.*, p_prof.full_name AS profiles_full_name, p_prof.email AS profiles_email, p_prof.phone AS profiles_phone FROM doctor_patients LEFT JOIN \`User\` AS p_prof ON doctor_patients.patient_id = p_prof.id`;
-      } else if (table === 'hospital_patients' && (selectFields.includes('profiles') || selectFields.includes('User'))) {
+      } else if (table === 'hospital_patients' && (sel.includes('profiles') || sel.includes('User'))) {
         baseSql = `SELECT hospital_patients.*, p_prof.full_name AS profiles_full_name, p_prof.email AS profiles_email, p_prof.phone AS profiles_phone FROM hospital_patients LEFT JOIN \`User\` AS p_prof ON hospital_patients.patient_id = p_prof.id`;
-      } else if ((table === 'hospital_doctors' || table === 'HospitalDoctor') && (selectFields.includes('profiles') || selectFields.includes('User'))) {
+      } else if ((table === 'hospital_doctors' || table === 'HospitalDoctor') && (sel.includes('profiles') || sel.includes('User'))) {
         baseSql = `SELECT ${escapeId(table)}.*, doc_prof.full_name AS profiles_full_name, doc_prof.specialty AS profiles_specialty FROM ${escapeId(table)} LEFT JOIN \`User\` AS doc_prof ON ${escapeId(table)}.doctor_id = doc_prof.id`;
-      } else if (table === 'diagnostic_orders' && (selectFields.includes('test') || selectFields.includes('MedicalTest'))) {
+      } else if (table === 'diagnostic_orders' && (sel.includes('test') || sel.includes('MedicalTest'))) {
         baseSql = `SELECT diagnostic_orders.*, mt.name AS test_name, mt.category AS test_category, mt.base_price AS test_base_price FROM diagnostic_orders LEFT JOIN MedicalTest AS mt ON diagnostic_orders.test_id = mt.id`;
       } else {
         baseSql = `SELECT * FROM ${escapeId(table)}`;

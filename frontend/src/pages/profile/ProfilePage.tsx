@@ -3,8 +3,9 @@ import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/shared/lib/supabaseClient';
 import {
-    Phone, Envelope, SignOut, User, Drop, CalendarCheck, CaretRight,
-    PencilSimple, Heartbeat, GraduationCap, Wallet, IdentificationCard, ShieldCheck, Info, Warning
+    Phone, Envelope, SignOut, User, Drop, CaretRight,
+    PencilSimple, Heartbeat, GraduationCap, Wallet, IdentificationCard, ShieldCheck,
+    CheckCircle, FirstAid, FileText
 } from 'phosphor-react';
 import styles from './Profile.module.css';
 import { useNavigate } from 'react-router-dom';
@@ -91,282 +92,303 @@ export default function ProfilePage() {
         }
     };
 
-    if (loading) return <div className={styles.loading}>{t('profile.loading')}</div>;
+    if (loading) {
+        return (
+            <div className={styles.loading}>
+                <span>{t('profile.loading') || 'Loading Profile...'}</span>
+            </div>
+        );
+    }
 
     return (
         <motion.div
             className={styles.container}
-            initial="hidden"
-            animate="visible"
-            variants={{
-                hidden: { opacity: 0 },
-                visible: {
-                    opacity: 1,
-                    transition: { staggerChildren: 0.1 }
-                }
-            }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
         >
-            <motion.div
-                className={styles.pageHeader}
-                variants={{ hidden: { opacity: 0, y: -20 }, visible: { opacity: 1, y: 0 } }}
-            >
+            {/* Top Header Bar */}
+            <div className={styles.pageHeader}>
                 <h2 className={styles.pageTitle}>Digital Health Profile</h2>
-                <button
-                    onClick={() => navigate('/profile/edit')}
-                    className={styles.editBtn}
-                >
+                <button onClick={() => navigate('/profile/edit')} className={styles.editBtn}>
                     <PencilSimple size={18} weight="bold" /> Edit Profile Details
                 </button>
-            </motion.div>
+            </div>
 
-            {/* Profile Grid (Layout: Profile Card & Health ID / Doctor Info Side-by-Side) */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px', width: '100%' }}>
-                
-                {/* Left Side: General Profile Card */}
-                <div>
-                    <motion.div
-                        className={styles.profileCard}
-                        variants={{ hidden: { opacity: 0, scale: 0.95 }, visible: { opacity: 1, scale: 1 } }}
-                        style={{ height: '100%' }}
-                    >
+            {/* Hero Profile Banner & User Identity Card */}
+            <div className={styles.profileHeroCard}>
+                <div className={styles.heroBanner}></div>
+                <div className={styles.profileHeroBody}>
+                    <div className={styles.avatarHeaderRow}>
                         <div className={styles.avatarCircle}>
                             {profile?.full_name?.[0]?.toUpperCase() || <User />}
                         </div>
-
-                        <h1 className={styles.userName}>{profile?.full_name}</h1>
-                        <div className={styles.userEmail}>{profile?.email}</div>
-
-                        <span className={styles.roleBadge} style={{ textTransform: 'uppercase' }}>
+                        <span className={styles.roleBadge}>
+                            <ShieldCheck size={16} weight="fill" />
                             {profile?.role}
                         </span>
+                    </div>
 
-                        <div className={styles.badgeContainer} style={{ marginTop: '12px' }}>
-                            {profile?.blood_group && (
-                                <Badge icon={<Drop weight="fill" />} text={`Group ${profile.blood_group}`} color="#ef4444" bg="#fef2f2" />
-                            )}
-                            {profile?.role === 'DOCTOR' && profile.specialty && (
-                                <Badge icon={<Heartbeat weight="fill" />} text={profile.specialty} color="#6366f1" bg="#e0e7ff" />
-                            )}
+                    <div className={styles.userIdentity}>
+                        <h1 className={styles.userName}>
+                            {profile?.full_name}
+                            <CheckCircle size={20} weight="fill" color="var(--primary)" />
+                        </h1>
+                        <span className={styles.userEmail}>{profile?.email}</span>
+                    </div>
+
+                    {/* Quick Health Stats Chips */}
+                    <div className={styles.statsGrid}>
+                        <div className={styles.statCard}>
+                            <div className={styles.statIcon} style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--error)' }}>
+                                <Drop weight="fill" />
+                            </div>
+                            <div>
+                                <span className={styles.statLabel}>Blood Group</span>
+                                <span className={styles.statValue}>{profile?.blood_group || 'Not set'}</span>
+                            </div>
                         </div>
 
-                        <div className={styles.infoStack} style={{ marginTop: '24px', textAlign: 'left', width: '100%' }}>
-                            <InfoRow icon={<Phone weight="duotone" size={20} />} label={t('profile.fields.phone')} value={profile?.phone || 'N/A'} />
-                            <InfoRow icon={<Envelope weight="duotone" size={20} />} label={t('profile.fields.email')} value={profile?.email || ''} />
+                        <div className={styles.statCard}>
+                            <div className={styles.statIcon} style={{ background: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary)' }}>
+                                <IdentificationCard weight="fill" />
+                            </div>
+                            <div>
+                                <span className={styles.statLabel}>Health ID</span>
+                                <span className={styles.statValue}>{profile?.health_id || 'HS-PENDING'}</span>
+                            </div>
+                        </div>
+
+                        <div className={styles.statCard}>
+                            <div className={styles.statIcon} style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)' }}>
+                                <FirstAid weight="fill" />
+                            </div>
+                            <div>
+                                <span className={styles.statLabel}>Allergies</span>
+                                <span className={styles.statValue}>{profile?.allergies ? 'Recorded' : 'None'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Content Grid (Left Contact/Bio vs Right Health ID & Clinical) */}
+            <div className={styles.mainGrid}>
+                {/* Left Side: Contact & Account Information */}
+                <div className={styles.sideColumn}>
+                    <div className={styles.sectionCard}>
+                        <div className={styles.sectionHeaderRow}>
+                            <h3 className={styles.sectionTitle}>
+                                <User size={20} color="var(--primary)" /> Contact Information
+                            </h3>
+                        </div>
+                        <div className={styles.infoStack}>
+                            <div className={styles.infoRow}>
+                                <Phone size={20} className={styles.infoIcon} />
+                                <div>
+                                    <span className={styles.infoLabel}>{t('profile.fields.phone')}</span>
+                                    <span className={styles.infoValue}>{profile?.phone || 'N/A'}</span>
+                                </div>
+                            </div>
+
+                            <div className={styles.infoRow}>
+                                <Envelope size={20} className={styles.infoIcon} />
+                                <div>
+                                    <span className={styles.infoLabel}>{t('profile.fields.email')}</span>
+                                    <span className={styles.infoValue}>{profile?.email || 'N/A'}</span>
+                                </div>
+                            </div>
+
                             {profile?.district && (
-                                <InfoRow icon={<IdentificationCard weight="duotone" size={20} />} label="Location" value={`${profile.address || ''}, ${profile.district}`} />
+                                <div className={styles.infoRow}>
+                                    <IdentificationCard size={20} className={styles.infoIcon} />
+                                    <div>
+                                        <span className={styles.infoLabel}>District & Address</span>
+                                        <span className={styles.infoValue}>{profile.address ? `${profile.address}, ` : ''}{profile.district}</span>
+                                    </div>
+                                </div>
                             )}
                         </div>
-                    </motion.div>
+                    </div>
+
+                    {/* Quick Navigations */}
+                    <div className={styles.sectionCard}>
+                        <div className={styles.sectionHeaderRow}>
+                            <h3 className={styles.sectionTitle}>
+                                <FileText size={20} color="var(--primary)" /> Health Activities
+                            </h3>
+                        </div>
+                        <div className={styles.infoStack}>
+                            <button onClick={() => navigate('/blood/my-requests')} className={styles.navButton}>
+                                <div className={styles.navContent}>
+                                    <div className={styles.navIconBox} style={{ background: 'rgba(239,68,68,0.1)', color: 'var(--error)' }}>
+                                        <Drop weight="fill" />
+                                    </div>
+                                    <span className={styles.navLabel}>{t('profile.my_blood_requests')}</span>
+                                </div>
+                                <CaretRight size={18} color="var(--text-muted)" />
+                            </button>
+
+                            <button onClick={() => navigate('/blood/register')} className={styles.navButton}>
+                                <div className={styles.navContent}>
+                                    <div className={styles.navIconBox} style={{ background: 'rgba(16,185,129,0.1)', color: 'var(--success)' }}>
+                                        <User weight="fill" />
+                                    </div>
+                                    <span className={styles.navLabel}>{t('profile.donor_settings')}</span>
+                                </div>
+                                <CaretRight size={18} color="var(--text-muted)" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <button onClick={handleLogout} className={styles.logoutBtn}>
+                        <SignOut size={20} weight="bold" /> {t('common.logout')}
+                    </button>
                 </div>
 
-                {/* Right Side: Workflows (Citizen Health ID Card OR Doctor Clinical Credentials) */}
-                <div>
+                {/* Right Side: Role Specific Modules */}
+                <div className={styles.contentColumn}>
                     {profile?.role === 'CITIZEN' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                            {/* Glassmorphic Digital Health ID Card */}
-                            <motion.div
-                                className="t-card"
-                                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                                style={{
-                                    background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-                                    borderRadius: '16px',
-                                    padding: '24px',
-                                    position: 'relative',
-                                    overflow: 'hidden',
-                                    boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                                    border: '1px solid rgba(255,255,255,0.05)'
-                                }}
-                            >
-                                <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '120px', height: '120px', background: '#3b82f6', filter: 'blur(80px)', borderRadius: '50%', opacity: 0.15 }}></div>
-                                
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px' }}>
+                        <>
+                            {/* Theme-Adaptive Digital Health ID Card */}
+                            <div className={styles.healthIdCard}>
+                                <div className={styles.idCardHeader}>
                                     <div>
-                                        <h3 style={{ margin: 0, fontSize: '18px', color: '#3b82f6', letterSpacing: '1px' }}>HEALTHSYNC</h3>
-                                        <span style={{ fontSize: '11px', color: '#94a3b8', textTransform: 'uppercase' }}>Government Digital Health ID</span>
+                                        <h3 className={styles.idCardBrand}>HEALTHSYNC</h3>
+                                        <span className={styles.idCardSubtitle}>Government Digital Health Record</span>
                                     </div>
-                                    <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#f1f5f9' }}>
+                                    <span className={styles.idCardNumber}>
                                         {profile.health_id || 'HS-PENDING'}
                                     </span>
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '20px' }}>
+                                <div className={styles.idGrid}>
                                     <div>
-                                        <small style={{ display: 'block', fontSize: '10px', color: '#64748b', textTransform: 'uppercase' }}>Citizen Name</small>
-                                        <span style={{ fontSize: '15px', fontWeight: 'bold', color: '#f8fafc' }}>{profile.full_name}</span>
+                                        <span className={styles.infoLabel}>Citizen Name</span>
+                                        <span className={styles.infoValue}>{profile.full_name}</span>
                                     </div>
                                     <div>
-                                        <small style={{ display: 'block', fontSize: '10px', color: '#64748b', textTransform: 'uppercase' }}>Blood Group</small>
-                                        <span style={{ fontSize: '15px', fontWeight: 'bold', color: '#ef4444' }}>{profile.blood_group || 'N/A'}</span>
+                                        <span className={styles.infoLabel}>Blood Group</span>
+                                        <span className={styles.infoValue} style={{ color: 'var(--error)' }}>{profile.blood_group || 'N/A'}</span>
                                     </div>
                                     <div>
-                                        <small style={{ display: 'block', fontSize: '10px', color: '#64748b', textTransform: 'uppercase' }}>National ID (NID)</small>
-                                        <span style={{ fontSize: '14px', color: '#cbd5e1' }}>{profile.national_id || 'N/A'}</span>
+                                        <span className={styles.infoLabel}>National ID (NID)</span>
+                                        <span className={styles.infoValue}>{profile.national_id || 'N/A'}</span>
                                     </div>
                                     <div>
-                                        <small style={{ display: 'block', fontSize: '10px', color: '#64748b', textTransform: 'uppercase' }}>Passport Number</small>
-                                        <span style={{ fontSize: '14px', color: '#cbd5e1' }}>{profile.passport_number || 'N/A'}</span>
+                                        <span className={styles.infoLabel}>Passport Number</span>
+                                        <span className={styles.infoValue}>{profile.passport_number || 'N/A'}</span>
                                     </div>
                                 </div>
 
                                 {profile.emergency_contact_name && (
-                                    <div style={{ marginTop: '16px', background: 'rgba(255,255,255,0.02)', padding: '10px 16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                        <small style={{ display: 'block', fontSize: '10px', color: '#f43f5e', textTransform: 'uppercase', fontWeight: 'bold' }}>Emergency Contact Contact</small>
-                                        <span style={{ fontSize: '13px', color: '#cbd5e1' }}>
+                                    <div className={styles.emergencyBanner}>
+                                        <span className={styles.emergencyTitle}>Emergency Contact</span>
+                                        <span className={styles.emergencyText}>
                                             {profile.emergency_contact_name} ({profile.emergency_contact_phone})
                                         </span>
                                     </div>
                                 )}
-                            </motion.div>
+                            </div>
 
-                            {/* Medical Summary Details */}
-                            <motion.div
-                                className="t-card"
-                                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                            >
-                                <h3 className={styles.sectionTitle} style={{ borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '16px' }}>Clinical Health Profile</h3>
-                                
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            {/* Clinical Health Records */}
+                            <div className={styles.sectionCard}>
+                                <div className={styles.sectionHeaderRow}>
+                                    <h3 className={styles.sectionTitle}>
+                                        <Heartbeat size={20} color="var(--primary)" /> Clinical Medical Profile
+                                    </h3>
+                                </div>
+
+                                <div className={styles.idGrid} style={{ gridTemplateColumns: '1fr 1fr' }}>
                                     <div>
-                                        <h4 style={{ margin: '0 0 6px', fontSize: '14px', color: '#f8fafc' }}>Allergies</h4>
-                                        <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>{profile.allergies || 'No allergies recorded.'}</p>
+                                        <span className={styles.infoLabel}>Known Allergies</span>
+                                        <span className={styles.infoValue}>{profile.allergies || 'No allergies recorded.'}</span>
                                     </div>
                                     <div>
-                                        <h4 style={{ margin: '0 0 6px', fontSize: '14px', color: '#f8fafc' }}>Chronic Illnesses</h4>
-                                        <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>{profile.chronic_diseases || 'No chronic diseases recorded.'}</p>
+                                        <span className={styles.infoLabel}>Chronic Illnesses</span>
+                                        <span className={styles.infoValue}>{profile.chronic_diseases || 'No chronic diseases recorded.'}</span>
                                     </div>
                                     <div>
-                                        <h4 style={{ margin: '0 0 6px', fontSize: '14px', color: '#f8fafc' }}>Vaccination History</h4>
-                                        <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>{profile.vaccination_history || 'No vaccines recorded.'}</p>
+                                        <span className={styles.infoLabel}>Vaccination History</span>
+                                        <span className={styles.infoValue}>{profile.vaccination_history || 'No vaccines recorded.'}</span>
                                     </div>
                                     <div>
-                                        <h4 style={{ margin: '0 0 6px', fontSize: '14px', color: '#f8fafc' }}>Insurance Policy</h4>
-                                        <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>{profile.insurance_info || 'No active health insurance policy.'}</p>
+                                        <span className={styles.infoLabel}>Insurance Policy</span>
+                                        <span className={styles.infoValue}>{profile.insurance_info || 'No active policy recorded.'}</span>
                                     </div>
                                     <div>
-                                        <h4 style={{ margin: '0 0 6px', fontSize: '14px', color: '#f8fafc' }}>Organ Donor Status</h4>
-                                        <span className="t-badge t-badge-info" style={{ display: 'inline-block' }}>
-                                            {profile.organ_donor_status || 'NONE'}
-                                        </span>
+                                        <span className={styles.infoLabel}>Organ Donor Status</span>
+                                        <span className={styles.infoValue} style={{ color: 'var(--primary)', fontWeight: 700 }}>{profile.organ_donor_status || 'NONE'}</span>
                                     </div>
                                     <div>
-                                        <h4 style={{ margin: '0 0 6px', fontSize: '14px', color: '#f8fafc' }}>Birth Certificate</h4>
-                                        <p style={{ margin: 0, fontSize: '13px', color: '#94a3b8' }}>{profile.birth_reg_number || 'N/A'}</p>
+                                        <span className={styles.infoLabel}>Birth Registration No.</span>
+                                        <span className={styles.infoValue}>{profile.birth_reg_number || 'N/A'}</span>
                                     </div>
                                 </div>
-                            </motion.div>
-                        </div>
+                            </div>
+                        </>
                     )}
 
                     {profile?.role === 'DOCTOR' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                            {/* Doctor License Verification Status */}
-                            <motion.div
-                                className="t-card"
-                                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                            >
-                                <h3 className={styles.sectionTitle} style={{ borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '16px' }}>Clinical License Verification</h3>
-                                
+                        <>
+                            {/* License Verification Card */}
+                            <div className={styles.sectionCard}>
+                                <div className={styles.sectionHeaderRow}>
+                                    <h3 className={styles.sectionTitle}>
+                                        <ShieldCheck size={20} color="var(--primary)" /> Clinical License Verification
+                                    </h3>
+                                </div>
                                 <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                                    <div style={{ background: profile.license_status === 'VERIFIED' ? '#059669' : '#d97706', padding: '12px', borderRadius: '8px', color: '#fff' }}>
+                                    <div style={{ background: profile.license_status === 'VERIFIED' ? 'var(--success)' : 'var(--warning)', padding: '12px', borderRadius: '12px', color: '#fff' }}>
                                         <ShieldCheck size={32} weight="fill" />
                                     </div>
                                     <div>
-                                        <h4 style={{ margin: 0, fontSize: '16px', color: '#f1f5f9' }}>License Number: {profile.license_number || 'PENDING INITIALIZATION'}</h4>
-                                        <span style={{ fontSize: '13px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                                            Status: 
-                                            <strong className={`t-badge ${profile.license_status === 'VERIFIED' ? 't-badge-success' : 't-badge-warning'}`}>
-                                                {profile.license_status || 'PENDING'}
-                                            </strong>
+                                        <span className={styles.infoValue} style={{ fontSize: '16px', fontWeight: 700 }}>License No: {profile.license_number || 'PENDING'}</span>
+                                        <span className={styles.infoLabel} style={{ marginTop: '4px' }}>
+                                            Status: <strong style={{ color: profile.license_status === 'VERIFIED' ? 'var(--success)' : 'var(--warning)' }}>{profile.license_status || 'PENDING'}</strong>
                                         </span>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </div>
 
-                            {/* Professional Details */}
-                            <motion.div
-                                className="t-card"
-                                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                            >
-                                <h3 className={styles.sectionTitle} style={{ borderBottom: '1px solid #334155', paddingBottom: '8px', marginBottom: '16px' }}>Professional Details</h3>
-                                <div className={styles.infoStack}>
-                                    {profile.degree && <InfoRow icon={<GraduationCap weight="duotone" size={24} />} label={t('profile.fields.degree')} value={profile.degree} />}
-                                    {profile.consultation_fee && <InfoRow icon={<Wallet weight="duotone" size={24} />} label={t('profile.fields.fees')} value={`৳${profile.consultation_fee}`} />}
-                                    {profile.about && <div className={styles.aboutBox}>"{profile.about}"</div>}
+                            {/* Doctor Credentials */}
+                            <div className={styles.sectionCard}>
+                                <div className={styles.sectionHeaderRow}>
+                                    <h3 className={styles.sectionTitle}>
+                                        <GraduationCap size={20} color="var(--primary)" /> Professional Details
+                                    </h3>
                                 </div>
-                            </motion.div>
-                        </div>
+                                <div className={styles.infoStack}>
+                                    {profile.degree && (
+                                        <div className={styles.infoRow}>
+                                            <GraduationCap size={20} className={styles.infoIcon} />
+                                            <div>
+                                                <span className={styles.infoLabel}>{t('profile.fields.degree')}</span>
+                                                <span className={styles.infoValue}>{profile.degree}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {profile.consultation_fee && (
+                                        <div className={styles.infoRow}>
+                                            <Wallet size={20} className={styles.infoIcon} />
+                                            <div>
+                                                <span className={styles.infoLabel}>{t('profile.fields.fees')}</span>
+                                                <span className={styles.infoValue}>৳{profile.consultation_fee}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {profile.about && (
+                                        <div>
+                                            <span className={styles.infoLabel}>About Doctor</span>
+                                            <p className={styles.infoValue} style={{ fontStyle: 'italic', marginTop: '4px' }}>"{profile.about}"</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </>
                     )}
                 </div>
             </div>
-
-            {/* Bottom Actions & Links */}
-            <motion.div
-                className={styles.sectionWrapper}
-                variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } }}
-                style={{ marginTop: '24px' }}
-            >
-                <h3 className={styles.sectionTitle}>{t('profile.activity')}</h3>
-                <div className={styles.infoStack}>
-                    <NavButton onClick={() => navigate('/blood/my-requests')} icon={<Drop size={20} weight="fill" />} label={t('profile.my_blood_requests')} color="var(--error)" bg="var(--error-light)" />
-                    <NavButton onClick={() => navigate('/blood/register')} icon={<User size={20} weight="fill" />} label={t('profile.donor_settings')} color="var(--success)" bg="var(--success-light)" />
-                </div>
-            </motion.div>
-
-            <motion.button
-                onClick={handleLogout}
-                className={styles.logoutBtn}
-                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                style={{ marginTop: '24px' }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-            >
-                <SignOut size={20} weight="bold" /> {t('common.logout')}
-            </motion.button>
         </motion.div>
     );
 }
-
-// Helper Components
-interface BadgeProps {
-    icon: React.ReactNode;
-    text: string;
-    color: string;
-    bg: string;
-}
-const Badge = ({ icon, text, color, bg }: BadgeProps) => (
-    <div className={styles.customBadge} style={{ backgroundColor: bg, color: color }}>
-        {icon} {text}
-    </div>
-);
-
-interface InfoRowProps {
-    icon: React.ReactNode;
-    label: string;
-    value: string | number;
-}
-const InfoRow = ({ icon, label, value }: InfoRowProps) => (
-    <div className={styles.infoRow}>
-        <div style={{ color: 'var(--text-secondary)' }}>{icon}</div>
-        <div>
-            <small className={styles.infoLabel}>{label}</small>
-            <div className={styles.infoValue}>{value}</div>
-        </div>
-    </div>
-);
-
-interface NavButtonProps {
-    onClick: () => void;
-    icon: React.ReactNode;
-    label: string;
-    color: string;
-    bg: string;
-}
-const NavButton = ({ onClick, icon, label, color, bg }: NavButtonProps) => (
-    <button onClick={onClick} className={styles.navButton}>
-        <div className={styles.navContent}>
-            <div className={styles.navIconBox} style={{ backgroundColor: bg, color: color }}>{icon}</div>
-            <span className={styles.navLabel}>{label}</span>
-        </div>
-        <CaretRight size={18} color="#94A3B8" />
-    </button>
-);
